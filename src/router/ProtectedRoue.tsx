@@ -13,17 +13,18 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
   const { setToken } = useTokenStore();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!token) {
-      navigate('/login');
-    } else {
-      setToken(token);
-      navigate('/');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, navigate]);
+  // useEffect(() => {
+  //   if (!token) {
+  //     navigate('/login');
+  //   } else {
+  //     setToken(token);
+  //     navigate('/');
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [token, navigate]);
 
-  return token && children ? children : <Outlet />;
+  // return token && children ? children : <Outlet />;
+  return children ? children : <Outlet />;
 };
 
 export default PrivateRoute;

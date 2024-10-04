@@ -6,6 +6,7 @@ import { createTheme, ThemeProvider } from '@mui/material';
 import { orange } from '@mui/material/colors';
 import './App.css';
 import MainRoute from './router/MainRoute';
+import { BrowserRouter } from 'react-router-dom';
 
 declare module '@mui/material/styles' {
   interface Theme {
@@ -29,7 +30,9 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <MainRoute />
+      <BrowserRouter>
+        <MainRoute />
+      </BrowserRouter>
     </ThemeProvider>
   );
 }
