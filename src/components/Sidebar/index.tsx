@@ -30,7 +30,7 @@ export default function SideMenu() {
       sx={{
         display: { md: 'block' },
         [`& .${drawerClasses.paper}`]: {
-          backgroundColor: 'background.paper',
+          backgroundColor: '#f8f8fa',
         },
       }}
     >

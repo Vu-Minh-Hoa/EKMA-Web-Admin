@@ -1,39 +1,64 @@
-import * as React from 'react';
+import AnalyticsRoundedIcon from '@mui/icons-material/AnalyticsRounded';
+import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import AnalyticsRoundedIcon from '@mui/icons-material/AnalyticsRounded';
-import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
-import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
-import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CATEGORY_TEXTS } from '../../constants/common';
+import {
+  COURSES_GRADES_MANAGEMENT_LINK,
+  COURSES_SCHEDULES_MANAGEMENT_LINK,
+  STUDENTS_MANAMENT_LINK,
+} from '../../links';
 
 const mainListItems = [
-  { text: 'Home', icon: <HomeRoundedIcon /> },
-  { text: 'Analytics', icon: <AnalyticsRoundedIcon /> },
-  { text: 'Clients', icon: <PeopleRoundedIcon /> },
-  { text: 'Tasks', icon: <AssignmentRoundedIcon /> },
-];
-
-const secondaryListItems = [
-  { text: 'Settings', icon: <SettingsRoundedIcon /> },
-  { text: 'About', icon: <InfoRoundedIcon /> },
-  { text: 'Feedback', icon: <HelpRoundedIcon /> },
+  {
+    text: CATEGORY_TEXTS.STUDENTS_MANAMENT,
+    link: STUDENTS_MANAMENT_LINK,
+    icon: <PeopleRoundedIcon />,
+  },
+  {
+    text: CATEGORY_TEXTS.COURSES_GRADES,
+    link: COURSES_GRADES_MANAGEMENT_LINK,
+    icon: <AnalyticsRoundedIcon />,
+  },
+  {
+    text: CATEGORY_TEXTS.COURSES_SCHEDULES,
+    link: COURSES_SCHEDULES_MANAGEMENT_LINK,
+    icon: <AssignmentRoundedIcon />,
+  },
 ];
 
 export default function MenuContent() {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const handleOnClickNavbar = (link: string) => {
+    navigate(link);
+  };
+
   return (
-    <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
+    <Stack sx={{ flexGrow: 1, gap: 3 }}>
       <List dense>
         {mainListItems.map((item, index) => (
-          <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-            <ListItemButton selected={index === 0}>
-              <ListItemIcon>{item.icon}</ListItemIcon>
+          <ListItem
+            onClick={() => handleOnClickNavbar(item.link)}
+            key={index}
+            disablePadding
+            sx={{ display: 'block' }}
+          >
+            <ListItemButton
+              sx={{
+                padding: '10px 16px',
+              }}
+              selected={pathname.replace('/', '') === item.link}
+            >
+              <ListItemIcon sx={{ minWidth: 'unset', marginRight: 1 }}>
+                {item.icon}
+              </ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>
