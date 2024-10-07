@@ -20,7 +20,7 @@ function DashBoardLayout() {
         <Box
           component='main'
           className='content'
-          style={{ marginLeft: 240, fontSize: 20, padding: '14px 30px' }}
+          style={{ marginLeft: 240, fontSize: 20, padding: '20px 30px' }}
         >
           <Routes>
             <Route
