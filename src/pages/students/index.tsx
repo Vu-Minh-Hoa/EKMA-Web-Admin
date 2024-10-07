@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { UploadFileOutlined } from '@mui/icons-material';
-import { Box, Button, TextField, Typography } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { useState } from 'react';
-import ImportFileModal from '../../components/importFileModal';
+import { Box, Button, Input, TextField, Typography } from '@mui/material';
 import { CATEGORY_TEXTS } from '../../constants/common';
-import StudentsFormModal from './FormModal';
+import { UploadFileOutlined } from '@mui/icons-material';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import * as xlsx from 'xlsx';
+import { parseExcelFile } from '../../utils/parseFile';
 
 const columns: GridColDef<(typeof rows)[number]>[] = [
   {
@@ -61,41 +60,16 @@ const rows = [
 ];
 
 const StudentsManagement = () => {
-  const [isOpenImportModal, setIsOpenImportModal] = useState<boolean>(false);
-  const [isOpenFormModal, setIsOpenFormModal] = useState<boolean>(false);
-  const [sinhViensData, setSinhViensData] = useState<any>([]);
-
-  const handleFileUpload = (fileData: any) => {
-    console.log(fileData);
-  };
-
-  const handleOpenUploadFileModal = () => {
-    setIsOpenImportModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsOpenImportModal(false);
-  };
-
-  const handleOpenFormModal = () => {
-    setIsOpenFormModal(true);
-  };
-
-  const hanldeCloseFormModal = () => {
-    setIsOpenFormModal(false);
+  const handleFileUpload = (e: any) => {
+    const file = e.target.files[0];
+    if (file) {
+      const parsedData = parseExcelFile(file);
+      console.log(parsedData);
+    }
   };
 
   return (
     <Box>
-      <ImportFileModal
-        onUpload={handleFileUpload}
-        isShowModal={isOpenImportModal}
-        onClose={handleCloseModal}
-      />
-      <StudentsFormModal
-        isShowModal={isOpenFormModal}
-        onClose={hanldeCloseFormModal}
-      />
       <Box sx={{ marginBottom: '20px' }}>
         <Typography sx={{ fontSize: '30px', fontWeight: 'bold' }}>
           {CATEGORY_TEXTS.STUDENTS_MANAMENT}
@@ -122,56 +96,37 @@ const StudentsManagement = () => {
               gap: 1,
             }}
           >
-            <Button onClick={handleOpenFormModal} variant='contained'>
-              + Add
-            </Button>
-            <Button
-              onClick={handleOpenUploadFileModal}
-              variant='outlined'
-              component='label'
-            >
+            <Button variant='contained'>+ Add</Button>
+            <Button variant='outlined' component='label'>
               <UploadFileOutlined /> Import
+              <input
+                type='file'
+                hidden // Hide the actual file input
+                accept='.xlsx, .csv'
+                onChange={handleFileUpload}
+              />
             </Button>
           </Box>
         </Box>
 
         <Box sx={{ minHeight: '500px', width: '100%' }}>
-          {sinhViensData.length > 0 ? (
-            <DataGrid
-              disableColumnMenu
-              disableColumnFilter
-              disableColumnResize
-              disableColumnSorting
-              rows={sinhViensData}
-              columns={[]}
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 8,
-                  },
+          <DataGrid
+            disableColumnMenu
+            disableColumnFilter
+            disableColumnResize
+            disableColumnSorting
+            rows={rows}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 8,
                 },
-              }}
-              pageSizeOptions={[5]}
-              disableRowSelectionOnClick
-            />
-          ) : (
-            <Box
-              sx={{
-                flex: 1,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                border: '1px solid #ccc',
-                width: '100%',
-                height: '400px',
-                borderRadius: '5px',
-              }}
-            >
-              <Typography variant='h4' sx={{ color: '#ccc' }}>
-                No data
-              </Typography>
-            </Box>
-          )}
+              },
+            }}
+            pageSizeOptions={[5]}
+            disableRowSelectionOnClick
+          />
         </Box>
       </Box>
     </Box>

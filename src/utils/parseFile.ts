@@ -19,6 +19,7 @@ export const parseExcelFile = async (file: any) => {
           return acc;
         }, {})
       );
+
       resolve(formattedData);
     };
     reader.onerror = (error) => reject(error);
