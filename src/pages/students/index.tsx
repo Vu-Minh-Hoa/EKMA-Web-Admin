@@ -1,75 +1,273 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Box, Button, Input, TextField, Typography } from '@mui/material';
-import { CATEGORY_TEXTS } from '../../constants/common';
 import { UploadFileOutlined } from '@mui/icons-material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import * as xlsx from 'xlsx';
-import { parseExcelFile } from '../../utils/parseFile';
-
-const columns: GridColDef<(typeof rows)[number]>[] = [
-  {
-    field: 'id',
-    headerName: 'ID',
-    width: 50,
-    headerAlign: 'center',
-    align: 'center',
-  },
-  {
-    field: 'firstName',
-    headerName: 'First name',
-    width: 150,
-  },
-  {
-    field: 'lastName',
-    headerName: 'Last name',
-    width: 150,
-  },
-  {
-    field: 'age',
-    headerName: 'Age',
-    width: 110,
-  },
-  {
-    field: 'fullName',
-    headerName: 'Full name',
-    description: 'This column has a value getter and is not sortable.',
-    width: 160,
-  },
-];
+import DeleteIcon from '@mui/icons-material/Delete';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
+import { Box, Button, TextField, Typography } from '@mui/material';
+import { DataGrid, GridColDef, GridRowId } from '@mui/x-data-grid';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { v4 } from 'uuid';
+import { CATEGORY_TEXTS } from '../../constants/common';
+import { STUDENTS_MANAMENT_LINK } from '../../links';
+import useLoadingStore from '../../store/loadingStore';
+import StudentsFormModal from './FormModal';
+import { get } from '../../service/request';
+import ImportFileModal from './importFileModal';
 
 const rows = [
-  { id: 1, lastName: 'Snow', firstName: 'Jon', age: 14 },
-  { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 31 },
-  { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 31 },
-  { id: 4, lastName: 'Stark', firstName: 'Arya', age: 11 },
-  { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-  { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-  { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
-  { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
-  { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
-  { id: 10, lastName: 'Miller', firstName: 'Sarah', age: 27 },
-  { id: 11, lastName: 'Davies', firstName: 'Michael', age: 34 },
-  { id: 12, lastName: 'Garcia', firstName: 'Lucia', age: 22 },
-  { id: 13, lastName: 'Martinez', firstName: 'Carlos', age: null },
-  { id: 14, lastName: 'Lee', firstName: 'Anna', age: 19 },
-  { id: 15, lastName: 'Kim', firstName: null, age: 45 },
-  { id: 16, lastName: 'Brown', firstName: 'James', age: 38 },
-  { id: 17, lastName: 'Wilson', firstName: 'Emily', age: 29 },
-  { id: 18, lastName: 'Taylor', firstName: 'Oliver', age: 31 },
-  { id: 19, lastName: 'Anderson', firstName: 'Sophia', age: 25 },
+  {
+    id: v4(),
+    maGV: 'GV001',
+    hoTen: 'Nguyễn Văn An',
+    gioiTinh: 'Nam',
+    khoaName: 'Khoa Công Nghệ Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV002',
+    hoTen: 'Trần Thị Bích Ngọc',
+    gioiTinh: 'Nữ',
+    khoaName: 'Khoa Điện Tử Viễn Thông',
+  },
+  {
+    id: v4(),
+    maGV: 'GV003',
+    hoTen: 'Lê Minh Quân',
+    gioiTinh: 'Nam',
+    khoaName: 'Khoa An Toàn Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV004',
+    hoTen: 'Phạm Thị Lan',
+    gioiTinh: 'Nữ',
+    khoaName: 'Khoa Công Nghệ Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV005',
+    hoTen: 'Hoàng Văn Sơn',
+    gioiTinh: 'Nam',
+    khoaName: 'Khoa Điện Tử Viễn Thông',
+  },
+  {
+    id: v4(),
+    maGV: 'GV006',
+    hoTen: 'Vũ Thị Mai',
+    gioiTinh: 'Nữ',
+    khoaName: 'Khoa An Toàn Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV007',
+    hoTen: 'Đặng Quốc Dũng',
+    gioiTinh: 'Nam',
+    khoaName: 'Khoa Công Nghệ Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV008',
+    hoTen: 'Bùi Thị Hạnh',
+    gioiTinh: 'Nữ',
+    khoaName: 'Khoa Điện Tử Viễn Thông',
+  },
+  {
+    id: v4(),
+    maGV: 'GV009',
+    hoTen: 'Trịnh Văn Long',
+    gioiTinh: 'Nam',
+    khoaName: 'Khoa An Toàn Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV010',
+    hoTen: 'Ngô Thị Thu Trang',
+    gioiTinh: 'Nữ',
+    khoaName: 'Khoa Công Nghệ Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV011',
+    hoTen: 'Dương Quang Huy',
+    gioiTinh: 'Nam',
+    khoaName: 'Khoa Điện Tử Viễn Thông',
+  },
+  {
+    id: v4(),
+    maGV: 'GV012',
+    hoTen: 'Phùng Thị Nhung',
+    gioiTinh: 'Nữ',
+    khoaName: 'Khoa An Toàn Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV013',
+    hoTen: 'Nguyễn Hoàng Kiệt',
+    gioiTinh: 'Nam',
+    khoaName: 'Khoa Công Nghệ Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV014',
+    hoTen: 'Trương Thị Mỹ Linh',
+    gioiTinh: 'Nữ',
+    khoaName: 'Khoa Điện Tử Viễn Thông',
+  },
+  {
+    id: v4(),
+    maGV: 'GV015',
+    hoTen: 'Đỗ Minh Tú',
+    gioiTinh: 'Nam',
+    khoaName: 'Khoa An Toàn Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV016',
+    hoTen: 'Hoàng Thị Phương',
+    gioiTinh: 'Nữ',
+    khoaName: 'Khoa Công Nghệ Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV017',
+    hoTen: 'Võ Văn Hải',
+    gioiTinh: 'Nam',
+    khoaName: 'Khoa Điện Tử Viễn Thông',
+  },
+  {
+    id: v4(),
+    maGV: 'GV018',
+    hoTen: 'Mai Thị Thuỷ',
+    gioiTinh: 'Nữ',
+    khoaName: 'Khoa An Toàn Thông Tin',
+  },
+  {
+    id: v4(),
+    maGV: 'GV019',
+    hoTen: 'Lý Minh Trí',
+    gioiTinh: 'Nam',
+    khoaName: 'Khoa Công Nghệ Thông Tin',
+  },
 ];
 
 const StudentsManagement = () => {
-  const handleFileUpload = (e: any) => {
-    const file = e.target.files[0];
-    if (file) {
-      const parsedData = parseExcelFile(file);
-      console.log(parsedData);
-    }
+  const columns: GridColDef<(typeof rows)[number]>[] = [
+    {
+      field: 'maGV',
+      headerName: 'Mã GV',
+      width: 90,
+    },
+    {
+      field: 'hoTen',
+      headerName: 'Họ tên',
+      width: 150,
+    },
+    {
+      field: 'gioiTinh',
+      headerName: 'Giới tính',
+      width: 100,
+    },
+    {
+      field: 'khoaName',
+      headerName: 'Tên khoa',
+      description: 'This column has a value getter and is not sortable.',
+      width: 450,
+    },
+    {
+      field: 'action',
+      headerName: '',
+      description: 'This column has a value getter and is not sortable.',
+      width: 160,
+      renderCell: (params) => {
+        return (
+          <Box>
+            <Button
+              sx={{ mr: 1 }}
+              variant='contained'
+              size='small'
+              onClick={() => handleEditData(params.id)}
+            >
+              <ModeEditIcon />
+            </Button>
+            <Button
+              sx={{ backgroundColor: '#F56C6C' }}
+              variant='contained'
+              size='small'
+              onClick={() => handleDeleteData(params.id)}
+            >
+              <DeleteIcon />
+            </Button>
+          </Box>
+        );
+      },
+    },
+  ];
+  const { data } = useQuery({
+    queryKey: ['getData'],
+    queryFn: () => get({ url: 'giangvien' }),
+  });
+  const [isOpenImportModal, setIsOpenImportModal] = useState<boolean>(false);
+  const [isOpenFormModal, setIsOpenFormModal] = useState<boolean>(false);
+  const [sinhViensData, setSinhViensData] = useState<any>(rows);
+  const [selectedId, setSelectedId] = useState<any>();
+  const { isLoading, setIsLoading } = useLoadingStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timeoutSetLoading = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    return () => clearTimeout(timeoutSetLoading);
+  }, []);
+
+  useEffect(() => {
+    console.log('useQuery: ', data);
+  }, [data]);
+
+  const handleFileUpload = (fileData: any) => {};
+
+  const handleDeleteData = (id: GridRowId) => {
+    setSelectedId(id);
+  };
+
+  const handleEditData = (id: GridRowId) => {
+    navigate(`${id}`, { replace: true });
+    setIsOpenFormModal(true);
+    setSelectedId(id);
+  };
+
+  const handleOpenUploadFileModal = () => {
+    setIsOpenImportModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsOpenImportModal(false);
+  };
+
+  const handleOpenFormModal = () => {
+    setIsOpenFormModal(true);
+  };
+
+  const hanldeCloseFormModal = () => {
+    navigate(`/${STUDENTS_MANAMENT_LINK}`, { replace: true });
+    setIsOpenFormModal(false);
   };
 
   return (
     <Box>
+      <ImportFileModal
+        onUpload={handleFileUpload}
+        isShowModal={isOpenImportModal}
+        onClose={handleCloseModal}
+      />
+      <StudentsFormModal
+        isShowModal={isOpenFormModal}
+        onClose={hanldeCloseFormModal}
+        data={sinhViensData}
+      />
       <Box sx={{ marginBottom: '20px' }}>
         <Typography sx={{ fontSize: '30px', fontWeight: 'bold' }}>
           {CATEGORY_TEXTS.STUDENTS_MANAMENT}
@@ -96,37 +294,56 @@ const StudentsManagement = () => {
               gap: 1,
             }}
           >
-            <Button variant='contained'>+ Add</Button>
-            <Button variant='outlined' component='label'>
+            <Button onClick={handleOpenFormModal} variant='contained'>
+              + Add
+            </Button>
+            <Button
+              onClick={handleOpenUploadFileModal}
+              variant='outlined'
+              component='label'
+            >
               <UploadFileOutlined /> Import
-              <input
-                type='file'
-                hidden // Hide the actual file input
-                accept='.xlsx, .csv'
-                onChange={handleFileUpload}
-              />
             </Button>
           </Box>
         </Box>
 
         <Box sx={{ minHeight: '500px', width: '100%' }}>
-          <DataGrid
-            disableColumnMenu
-            disableColumnFilter
-            disableColumnResize
-            disableColumnSorting
-            rows={rows}
-            columns={columns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 8,
+          {sinhViensData.length > 0 ? (
+            <DataGrid
+              disableColumnMenu
+              disableColumnFilter
+              disableColumnResize
+              disableColumnSorting
+              rows={sinhViensData}
+              columns={columns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 8,
+                  },
                 },
-              },
-            }}
-            pageSizeOptions={[5]}
-            disableRowSelectionOnClick
-          />
+              }}
+              pageSizeOptions={[5]}
+              disableRowSelectionOnClick
+            />
+          ) : (
+            <Box
+              sx={{
+                flex: 1,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                border: '1px solid #ccc',
+                width: '100%',
+                height: '400px',
+                borderRadius: '5px',
+              }}
+            >
+              <Typography variant='h4' sx={{ color: '#ccc' }}>
+                No data
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>

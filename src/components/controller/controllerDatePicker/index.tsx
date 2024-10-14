@@ -15,7 +15,7 @@ export const FormInputDate = ({ name, control, label = 'Date' }: any) => {
           <DatePicker
             label={label}
             value={value ? dayjs(value) : null}
-            onChange={(date) => onChange(date ? date.toISOString() : null)}
+            onChange={(date: any) => onChange(date ? date.toISOString() : null)}
           />
         )}
       />

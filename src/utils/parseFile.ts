@@ -1,5 +1,14 @@
 import * as xlsx from "xlsx";
 
+
+export const loadExcelData = async (file: any) => {
+  const data = await file.arrayBuffer();
+  const workbook = xlsx.read(data, { type: 'array' });
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  return xlsx.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+};
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const parseExcelFile = async (file: any) => {
   return await (new Promise((resolve, reject) => {
@@ -19,7 +28,6 @@ export const parseExcelFile = async (file: any) => {
           return acc;
         }, {})
       );
-
       resolve(formattedData);
     };
     reader.onerror = (error) => reject(error);
@@ -28,72 +36,98 @@ export const parseExcelFile = async (file: any) => {
 };
 
 
-const handleFileUpload = (event: any) => {
-  const file = event.target.files[0];
-  const reader = new FileReader();
 
-  reader.onload = (e: any) => {
-    const data = new Uint8Array(e.target.result);
-    const workbook = xlsx.read(data, { type: 'array' });
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+export const parceSubheaderFile = async (file: any) => {
+  return await (new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const data = new Uint8Array(e.target?.result as ArrayBuffer);
+      const workbook = xlsx.read(data, { type: 'array' });
 
-    // Convert sheet data to JSON
-    const jsonData = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
-
-    // Process data according to format
-    const formattedData = formatData(jsonData);
-    console.log(formattedData);
-  };
-
-  reader.readAsArrayBuffer(file);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = xlsx.utils.sheet_to_json(worksheet, {
+        header: 1,
+      }) as (string | number)[][];
+      const extractedData = await parseData(jsonData);
+      resolve(extractedData);
+    };
+    reader.readAsArrayBuffer(file);
+    reader.onerror = (error) => reject(error);
+  }))
 };
 
-const formatData = (jsonData: any) => {
-  const output = []; // Define the output array
+const parseData = async (data: (string | number)[][]) => {
+  const headersRow1 = data[0];
+  const headersRow2 = data[1];
 
-  for (let i = 1; i < jsonData.length;) {
-    // Skip rows without a main object identifier (e.g., empty or undefined 'smt' fields)
-    if (!jsonData[i][0]) {
-      i++;
-      continue;
+  const sinhviensHeaders = headersRow2
+    .slice(headersRow1.length)
+    .map((header: any) => (header ? header.toString().trim() : ''))
+    .filter((header: any) => header !== '');
+
+  const mainHeaders = headersRow1
+    .slice(0, headersRow1.length)
+    .map((header: any) => header.trim());
+
+  const result = [];
+  let currentMainEntry: any = {};
+
+  for (let i = 2; i < data.length; i++) {
+    const row = data[i];
+    const sinhvienData: any = {};
+
+    const isMainEntry = mainHeaders.every((index: number) => {
+      const colIndex = index;
+      return (
+        row[colIndex] !== undefined && row[colIndex].toString().trim() !== ''
+      );
+    });
+
+    if (isMainEntry) {
+      if (currentMainEntry) {
+        result.push(currentMainEntry);
+      }
+
+      currentMainEntry = {};
+      mainHeaders.forEach((header: any, index: number) => {
+        const cellValue = row[index];
+        currentMainEntry[header] =
+          cellValue !== undefined ? cellValue.toString().trim() : '';
+      });
+
+      currentMainEntry[headersRow1[headersRow1.length - 1]] = [];
+
+      sinhviensHeaders.forEach((header: any, index: number) => {
+        const cellIndex = headersRow1.length + index;
+        const cellValue = row[cellIndex];
+        sinhvienData[header] =
+          cellValue !== undefined ? cellValue.toString().trim() : '';
+      });
+
+      if (Object.values(sinhvienData).some((value) => value !== '')) {
+        currentMainEntry[headersRow1[headersRow1.length - 1]].push(
+          sinhvienData,
+        );
+      }
+    } else if (currentMainEntry) {
+      sinhviensHeaders.forEach((header: any, index: number) => {
+        const cellIndex = headersRow1.length + index;
+        const cellValue = row[cellIndex];
+        sinhvienData[header] =
+          cellValue !== undefined ? cellValue.toString().trim() : '';
+      });
+
+      if (Object.values(sinhvienData).some((value) => value !== '')) {
+        currentMainEntry[headersRow1[headersRow1.length - 1]].push(
+          sinhvienData,
+        );
+      }
     }
-
-    // Create the main object for this group
-    const mainObj = {
-      smt333: jsonData[i][0]?.toString() || '',
-      smt2: jsonData[i][1]?.toString() || '',
-      maSV1111: jsonData[i][2]?.toString() || '',
-      smt44: jsonData[i][3]?.toString() || '',
-      smt5: jsonData[i][4]?.toString() || '',
-      smt6: jsonData[i][5]?.toString() || '',
-      smt7: jsonData[i][6]?.toString() || '',
-      sinhviens: []
-    };
-
-    // Collect all rows for the 'sinhviens' array until the next main object row is encountered
-    let j = i + 1;
-    while (j < jsonData.length && jsonData[j][0]) { // Continue while there's a valid main object
-      const sinhvienObj = {
-        Toans: jsonData[j][7]?.toString() || '',
-        "subject 2": jsonData[j][8]?.toString() || '',
-        subject5: jsonData[j][9]?.toString() || '',
-        "subject 1": jsonData[j][10]?.toString() || '',
-        subject11: jsonData[j][11]?.toString() || '',
-        "subject 9": jsonData[j][12]?.toString() || '',
-        "subject 8": jsonData[j][13]?.toString() || '',
-        "subject 7": jsonData[j][14]?.toString() || ''
-      };
-      mainObj.sinhviens.push(sinhvienObj);
-      j++;
-    }
-
-    // Add the completed main object to the output array
-    output.push(mainObj);
-
-    // Move to the next main object row
-    i = j;
   }
 
+  if (currentMainEntry) {
+    result.push(currentMainEntry);
+  }
 
-  return output;
+  return result;
 };

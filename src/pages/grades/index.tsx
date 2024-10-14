@@ -2,7 +2,7 @@ import * as xlsx from 'xlsx';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const CoursesGrades = () => {
-  const handleFileUpload = (e) => {
+  const handleFileUpload = (e: any) => {
     const file = e.target.files[0];
 
     if (!file) {
@@ -11,7 +11,7 @@ const CoursesGrades = () => {
 
     const reader = new FileReader();
 
-    reader.onload = (evt) => {
+    reader.onload = (evt: any) => {
       try {
         const data = evt.target.result;
         const workbook = xlsx.read(data, { type: 'binary' });
@@ -28,68 +28,75 @@ const CoursesGrades = () => {
     reader.readAsBinaryString(file);
   };
 
-  const processData = (data) => {
-    if (data.length < 2) {
-      setError('The Excel file does not contain enough rows.');
-      return [];
-    }
-
-    // Extract header rows
+  const processData = (data: any) => {
     const headersRow1 = data[0];
     const headersRow2 = data[1];
 
-    // Identify the index where 'sinhviens' starts
-    // const sinhviensStartIndex = headersRow1.findIndex(header => header.toLowerCase() === 'sinhviens');
-    console.log(headersRow1);
-    console.log(headersRow2);
-    // if (sinhviensStartIndex === -1) {
-    //   setError("Couldn't find the 'sinhviens' header.");
-    //   return [];
-    // }
-
-    // Combine headers for 'sinhviens' columns
     const sinhviensHeaders = headersRow2
       .slice(headersRow1.length)
-      .map((header) => header.trim());
+      .map((header: any) => (header ? header.toString().trim() : ''))
+      .filter((header: any) => header !== '');
+
+    const mainHeaders = headersRow1
+      .slice(0, headersRow1.length)
+      .map((header: any) => header.trim());
+
     const result = [];
-    const currentMainEntry: any = null;
+    let currentMainEntry: any = {};
 
     for (let i = 2; i < data.length; i++) {
       const row = data[i];
-      // Check if the row represents a main entry by verifying the first few columns
-      const isMainEntry =
-        row[0] !== undefined &&
-        row[1] !== undefined &&
-        row[2] !== undefined &&
-        row[2].toString().trim() !== '';
+      const sinhvienData: any = {};
+
+      const isMainEntry = mainHeaders.every((index: number) => {
+        const colIndex = index;
+        return (
+          row[colIndex] !== undefined && row[colIndex].toString().trim() !== ''
+        );
+      });
 
       if (isMainEntry) {
         if (currentMainEntry) {
           result.push(currentMainEntry);
         }
 
-        for (let i = 0; i < headersRow1.length - 2; i++) {
-          console.log('currentMainEntry: ', row, row[i]);
-          currentMainEntry[headersRow1[i]] = row[i];
-        }
-        currentMainEntry[headersRow1[headersRow1.length - 1]] = [];
-      } else if (currentMainEntry) {
-        // Process 'sinhviens' data
-        const sinhvienData = {};
-
-        sinhviensHeaders.forEach((header, index) => {
-          const cellValue = row[headersRow1.length + index];
-          sinhvienData[header] = cellValue ? cellValue?.toString().trim() : '';
+        currentMainEntry = {};
+        mainHeaders.forEach((header: any, index: number) => {
+          const cellValue = row[index];
+          currentMainEntry[header] =
+            cellValue !== undefined ? cellValue.toString().trim() : '';
         });
 
-        // Only add sinhvienData if at least one field is non-empty
+        currentMainEntry[headersRow1[headersRow1.length - 1]] = [];
+
+        sinhviensHeaders.forEach((header: any, index: number) => {
+          const cellIndex = headersRow1.length + index;
+          const cellValue = row[cellIndex];
+          sinhvienData[header] =
+            cellValue !== undefined ? cellValue.toString().trim() : '';
+        });
+
         if (Object.values(sinhvienData).some((value) => value !== '')) {
-          currentMainEntry.sinhviens.push(sinhvienData);
+          currentMainEntry[headersRow1[headersRow1.length - 1]].push(
+            sinhvienData,
+          );
+        }
+      } else if (currentMainEntry) {
+        sinhviensHeaders.forEach((header: any, index: number) => {
+          const cellIndex = headersRow1.length + index;
+          const cellValue = row[cellIndex];
+          sinhvienData[header] =
+            cellValue !== undefined ? cellValue.toString().trim() : '';
+        });
+
+        if (Object.values(sinhvienData).some((value) => value !== '')) {
+          currentMainEntry[headersRow1[headersRow1.length - 1]].push(
+            sinhvienData,
+          );
         }
       }
     }
 
-    // Push the last main entry if it exists
     if (currentMainEntry) {
       result.push(currentMainEntry);
     }

@@ -5,9 +5,7 @@ import MuiDrawer, { drawerClasses } from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import CardAlert from './CardAlert';
 import MenuContent from './MenuContent';
-import SelectContent from './SelectContent';
 import OptionsMenu from './OptionMenu';
 
 const drawerWidth = 240;
@@ -46,7 +44,7 @@ export default function SideMenu() {
       >
         <Avatar
           sizes='small'
-          alt='Riley Carter'
+          alt='Avatar'
           src='/static/images/avatar/7.jpg'
           sx={{ width: 36, height: 36 }}
         />
@@ -55,10 +53,10 @@ export default function SideMenu() {
             variant='body2'
             sx={{ fontWeight: 500, lineHeight: '16px' }}
           >
-            Riley Carter
+            Admin
           </Typography>
           <Typography variant='caption' sx={{ color: 'text.secondary' }}>
-            riley@email.com
+            admin@actvn.vn.com
           </Typography>
         </Box>
         <OptionsMenu />
