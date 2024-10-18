@@ -2,18 +2,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UploadFileOutlined } from '@mui/icons-material';
 import { Box, Button, Modal, Typography } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
-import {
-  loadExcelData,
-  parceSubheaderFile,
-  parseExcelData,
-  parseExcelFile,
-} from '../../../utils/parseFile';
 import ExcelTable from '../../../components/excelTable';
-import * as xlsx from 'xlsx';
+import { loadExcelData, parceSubheaderFile } from '../../../utils/parseFile';
 
-interface ImportFileModalProps {
+interface ImportFileGradeModalProps {
   isShowModal?: boolean;
   onUpload?: (data: any) => void;
   onClose?: () => void;
@@ -34,11 +27,11 @@ const style = {
   borderRadius: '5px',
 };
 
-const ImportFileModal = ({
+const ImportFileGradeModal = ({
   isShowModal = false,
   onUpload,
   onClose,
-}: ImportFileModalProps) => {
+}: ImportFileGradeModalProps) => {
   const [open, setOpen] = useState(false);
   const [fileData, setFileData] = useState<any>([]);
   const [fileName, setFileName] = useState<string>('');
@@ -54,6 +47,7 @@ const ImportFileModal = ({
 
       const excelData: any = await loadExcelData(file);
       const parsedData = await parceSubheaderFile(file);
+      console.log(parsedData);
       setFileData(excelData);
     } else {
       setFileName('');
@@ -139,4 +133,4 @@ const ImportFileModal = ({
   );
 };
 
-export default ImportFileModal;
+export default ImportFileGradeModal;

@@ -6,13 +6,11 @@ import { Box, Button, Modal, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import { FormInputDate } from '../../../components/controller/controllerDatePicker';
 import { FormInputText } from '../../../components/controller/controllerInputText';
-import { FormInputDropdown } from '../../../components/controller/controllerSelectInput';
+import { SelectComponent } from '../../../components/select';
+import { CoureseGrad } from '../../../constants/common';
 import useAcademyStore from '../../../store/academyStore';
-import useLoadingStore from '../../../store/loadingStore';
-import { useMutation } from '@tanstack/react-query';
-import { post } from '../../../service/request';
+import { FormInputDropdown } from '../../../components/controller/controllerSelectInput';
 
 const style = {
   display: 'flex',
@@ -30,77 +28,31 @@ const style = {
 };
 
 const defaultValues = {
-  maSV: '',
+  maGV: '',
   hoTen: '',
-  gioiTinh: 'Nam',
-  email: '',
-  phone: '',
-  khoaID: 1,
-  lopCQ: 1,
-  ngaySinh: new Date(),
+  gioiTinh: '',
+  khoaID: 0,
 };
 
 const schema = yup.object().shape({
-  maSV: yup.string().required('Required field!'),
+  maGV: yup.string().required('Required field!'),
   hoTen: yup.string().required('Required field!'),
-  email: yup.string().email().required('Required field!'),
-  phone: yup.string().required('Required field!'),
   gioiTinh: yup.string().required('Required field!'),
   khoaID: yup.number().required('Required field!'),
-  lopCQ: yup.string().required('Required field!'),
 });
 
 const StudentsFormModal = ({
   isShowModal = false,
   onSubmit,
-  khoaID,
-  lopCQID,
   onClose,
-  lopCQData,
   value,
 }: any) => {
-  const { setIsLoading } = useLoadingStore();
   const departments = useAcademyStore((state) => state.departments);
   const [open, setOpen] = useState(false);
-  const [_lopCQData, setLopCQData] = useState<any>(lopCQData);
-  const { handleSubmit, control, setValue, watch } = useForm<any>({
+  const { handleSubmit, control, setValue } = useForm<any>({
     defaultValues: defaultValues,
     resolver: yupResolver(schema),
   });
-  const watchSelectKhoa = watch('khoaID');
-  const { mutate: mutateGetLopCQ } = useMutation({
-    mutationFn: (payload: number) => {
-      setIsLoading(true);
-      return post({
-        url: `khoa/getLop/${payload}`,
-      });
-    },
-    onSuccess: (data) => {
-      if (data.length > 0) {
-        setValue('lopCQ', data[0].id);
-      } else {
-        setValue('lopCQ', 1);
-      }
-      setLopCQData(data);
-    },
-    onSettled: () => {
-      setIsLoading(false);
-    },
-  });
-
-  useEffect(() => {
-    if (watchSelectKhoa) mutateGetLopCQ(watchSelectKhoa);
-  }, [watchSelectKhoa]);
-
-  useEffect(() => {
-    handleSetValue();
-  }, []);
-
-  useEffect(() => {
-    if (!isShowModal) {
-      handleSetValue();
-    }
-  }, [isShowModal]);
 
   useEffect(() => {
     if (!value) {
@@ -111,29 +63,28 @@ const StudentsFormModal = ({
   }, [value]);
 
   useEffect(() => {
-    if (!value && departments.length > 0 && lopCQData.length > 0) {
-      setValue('khoaID', departments[0].id);
-      setValue('lopCQ', lopCQData[0].id);
+    if (!isShowModal) {
+      handleSetDefaultValue();
     }
-  }, [departments, lopCQData]);
+  }, [isShowModal]);
+
+  useEffect(() => {
+    if (departments.length > 0) {
+      setValue('khoaID', departments[0].id);
+    }
+  }, [departments]);
 
   const handleSetValue = () => {
-    setValue('maSV', value?.maSV);
-    setValue('hoTen', value?.hoTen);
-    setValue('gioiTinh', value?.gioiTinh);
-    setValue('ngaySinh', value?.ngaySinh);
-    setValue('khoaID', khoaID);
-    setValue('phone', value?.phone);
-    setValue('email', value?.email);
-    setValue('lopCQ', lopCQID);
+    setValue('maGV', value.maGV);
+    setValue('hoTen', value.hoTen);
+    setValue('gioiTinh', value.gioiTinh);
+    setValue('khoaID', value.khoaID);
   };
 
   const handleSetDefaultValue = () => {
-    setValue('maSV', '');
+    setValue('maGV', '');
     setValue('hoTen', '');
     setValue('gioiTinh', 'Nam');
-    setValue('phone', '');
-    setValue('email', '');
   };
 
   useEffect(() => {
@@ -141,10 +92,7 @@ const StudentsFormModal = ({
   }, [isShowModal]);
 
   const handleOnSubmit = (data: any) => {
-    const res = onSubmit && onSubmit(data);
-    if (res) {
-      handleClose();
-    }
+    onSubmit && onSubmit(data);
   };
 
   const handleClose = () => {
@@ -157,11 +105,8 @@ const StudentsFormModal = ({
       <Box sx={style}>
         <Typography variant='h5'>Add Students</Typography>
         <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', my: 4 }}>
+          <FormInputText name='maGV' control={control} label='Mã giảng viên' />
           <FormInputText name='hoTen' control={control} label='Họ tên' />
-          <FormInputText name='maSV' control={control} label='Mã sinh viên' />
-          <FormInputText name='phone' control={control} label='Số điện thoại' />
-          <FormInputText name='email' control={control} label='Email' />
-          <FormInputDate name='ngaySinh' control={control} label='Năm sinh' />
           <FormInputDropdown
             name='gioiTinh'
             control={control}
@@ -176,12 +121,6 @@ const StudentsFormModal = ({
             control={control}
             label='Khoa'
             options={departments}
-          />
-          <FormInputDropdown
-            name='lopCQ'
-            control={control}
-            label='Lớp chính quy'
-            options={_lopCQData}
           />
         </Box>
 

@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 import {
   loadExcelData,
   parceSubheaderFile,
-  parseExcelData,
   parseExcelFile,
 } from '../../../utils/parseFile';
 import ExcelTable from '../../../components/excelTable';
@@ -52,9 +51,8 @@ const ImportFileModal = ({
     if (file) {
       setFileName(file.name);
 
-      const excelData: any = await loadExcelData(file);
-      const parsedData = await parceSubheaderFile(file);
-      setFileData(excelData);
+      const parsedData: any = await loadExcelData(file);
+      setFileData(parsedData);
     } else {
       setFileName('');
       setFileData([]);

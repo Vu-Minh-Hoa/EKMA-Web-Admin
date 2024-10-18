@@ -1,4 +1,4 @@
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Modal } from '@mui/material';
 
 const style = {
   position: 'fixed',
@@ -17,9 +17,11 @@ const style = {
 
 const LoadingComponent = () => {
   return (
-    <Box sx={style}>
-      <CircularProgress />
-    </Box>
+    <Modal open={true}>
+      <Box sx={style}>
+        <CircularProgress />
+      </Box>
+    </Modal>
   );
 };
 

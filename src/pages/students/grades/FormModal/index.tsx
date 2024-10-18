@@ -10,9 +10,6 @@ import { FormInputDate } from '../../../components/controller/controllerDatePick
 import { FormInputText } from '../../../components/controller/controllerInputText';
 import { FormInputDropdown } from '../../../components/controller/controllerSelectInput';
 import useAcademyStore from '../../../store/academyStore';
-import useLoadingStore from '../../../store/loadingStore';
-import { useMutation } from '@tanstack/react-query';
-import { post } from '../../../service/request';
 
 const style = {
   display: 'flex',
@@ -32,11 +29,11 @@ const style = {
 const defaultValues = {
   maSV: '',
   hoTen: '',
-  gioiTinh: 'Nam',
+  gioiTinh: '',
   email: '',
   phone: '',
-  khoaID: 1,
-  lopCQ: 1,
+  khoaID: 0,
+  lopCQ: '',
   ngaySinh: new Date(),
 };
 
@@ -53,44 +50,16 @@ const schema = yup.object().shape({
 const StudentsFormModal = ({
   isShowModal = false,
   onSubmit,
-  khoaID,
-  lopCQID,
   onClose,
   lopCQData,
   value,
 }: any) => {
-  const { setIsLoading } = useLoadingStore();
   const departments = useAcademyStore((state) => state.departments);
   const [open, setOpen] = useState(false);
-  const [_lopCQData, setLopCQData] = useState<any>(lopCQData);
-  const { handleSubmit, control, setValue, watch } = useForm<any>({
+  const { handleSubmit, control, setValue } = useForm<any>({
     defaultValues: defaultValues,
     resolver: yupResolver(schema),
   });
-  const watchSelectKhoa = watch('khoaID');
-  const { mutate: mutateGetLopCQ } = useMutation({
-    mutationFn: (payload: number) => {
-      setIsLoading(true);
-      return post({
-        url: `khoa/getLop/${payload}`,
-      });
-    },
-    onSuccess: (data) => {
-      if (data.length > 0) {
-        setValue('lopCQ', data[0].id);
-      } else {
-        setValue('lopCQ', 1);
-      }
-      setLopCQData(data);
-    },
-    onSettled: () => {
-      setIsLoading(false);
-    },
-  });
-
-  useEffect(() => {
-    if (watchSelectKhoa) mutateGetLopCQ(watchSelectKhoa);
-  }, [watchSelectKhoa]);
 
   useEffect(() => {
     handleSetValue();
@@ -103,6 +72,7 @@ const StudentsFormModal = ({
   }, [isShowModal]);
 
   useEffect(() => {
+    console.log(value);
     if (!value) {
       handleSetDefaultValue();
     } else {
@@ -111,7 +81,7 @@ const StudentsFormModal = ({
   }, [value]);
 
   useEffect(() => {
-    if (!value && departments.length > 0 && lopCQData.length > 0) {
+    if (departments.length > 0 && lopCQData.length > 0) {
       setValue('khoaID', departments[0].id);
       setValue('lopCQ', lopCQData[0].id);
     }
@@ -122,10 +92,10 @@ const StudentsFormModal = ({
     setValue('hoTen', value?.hoTen);
     setValue('gioiTinh', value?.gioiTinh);
     setValue('ngaySinh', value?.ngaySinh);
-    setValue('khoaID', khoaID);
+    setValue('khoaID', value?.khoaID);
     setValue('phone', value?.phone);
     setValue('email', value?.email);
-    setValue('lopCQ', lopCQID);
+    setValue('lopCQ', value?.lopCQ);
   };
 
   const handleSetDefaultValue = () => {
@@ -141,10 +111,7 @@ const StudentsFormModal = ({
   }, [isShowModal]);
 
   const handleOnSubmit = (data: any) => {
-    const res = onSubmit && onSubmit(data);
-    if (res) {
-      handleClose();
-    }
+    onSubmit && onSubmit(data);
   };
 
   const handleClose = () => {
@@ -172,16 +139,16 @@ const StudentsFormModal = ({
             ]}
           />
           <FormInputDropdown
+            name='lopCQ'
+            control={control}
+            label='Lớp chính quy'
+            options={lopCQData}
+          />
+          <FormInputDropdown
             name='khoaID'
             control={control}
             label='Khoa'
             options={departments}
-          />
-          <FormInputDropdown
-            name='lopCQ'
-            control={control}
-            label='Lớp chính quy'
-            options={_lopCQData}
           />
         </Box>
 

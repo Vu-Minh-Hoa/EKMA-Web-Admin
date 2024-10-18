@@ -7,7 +7,8 @@ type TLoadingStore = {
 
 const useLoadingStore = create<TLoadingStore>((set) => ({
   isLoading: false,
-  setIsLoading: (isLoading: boolean) => set({ isLoading }),
+  setIsLoading: (isLoading: boolean) => set({}),
+  // setIsLoading: (isLoading: boolean) => set({ isLoading }),
 }));
 
 export default useLoadingStore;

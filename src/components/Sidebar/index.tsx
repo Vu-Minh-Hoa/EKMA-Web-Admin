@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import MenuContent from './MenuContent';
 import OptionsMenu from './OptionMenu';
+import useUserStore from '../../store/userStore';
 
 const drawerWidth = 240;
 
@@ -22,6 +23,8 @@ const Drawer = styled(MuiDrawer)({
 });
 
 export default function SideMenu() {
+  const userInfo = useUserStore((state) => state.userStore);
+
   return (
     <Drawer
       variant='permanent'
@@ -48,15 +51,12 @@ export default function SideMenu() {
           src='/static/images/avatar/7.jpg'
           sx={{ width: 36, height: 36 }}
         />
-        <Box sx={{ mr: 'auto' }}>
-          <Typography
-            variant='body2'
-            sx={{ fontWeight: 500, lineHeight: '16px' }}
-          >
-            Admin
+        <Box sx={{ mr: 'auto', height: '40px' }}>
+          <Typography variant='body2' sx={{ fontWeight: 500 }}>
+            {userInfo?.hoTen}
           </Typography>
           <Typography variant='caption' sx={{ color: 'text.secondary' }}>
-            admin@actvn.vn.com
+            {userInfo?.email}
           </Typography>
         </Box>
         <OptionsMenu />

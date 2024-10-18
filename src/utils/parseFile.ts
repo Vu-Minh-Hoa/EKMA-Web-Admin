@@ -48,7 +48,7 @@ export const parceSubheaderFile = async (file: any) => {
       const jsonData = xlsx.utils.sheet_to_json(worksheet, {
         header: 1,
       }) as (string | number)[][];
-      const extractedData = await parseData(jsonData);
+      const extractedData = await parseExcelData(jsonData);
       resolve(extractedData);
     };
     reader.readAsArrayBuffer(file);
@@ -56,9 +56,9 @@ export const parceSubheaderFile = async (file: any) => {
   }))
 };
 
-const parseData = async (data: (string | number)[][]) => {
-  const headersRow1 = data[0];
-  const headersRow2 = data[1];
+export const parseExcelData = async (data: (string | number)[][]) => {
+  const headersRow1 = data[0];  // First row of headers (tenLop, khoa, ..., dynamic sinhVien key)
+  const headersRow2 = data[1];  // Second row of headers (details like hoTen, gioiTinh, etc.)
 
   const sinhviensHeaders = headersRow2
     .slice(headersRow1.length)
@@ -66,28 +66,31 @@ const parseData = async (data: (string | number)[][]) => {
     .filter((header: any) => header !== '');
 
   const mainHeaders = headersRow1
-    .slice(0, headersRow1.length)
+    .slice(0, headersRow1.length - 1)  // All main headers except the last one (e.g., tenLop, khoa)
     .map((header: any) => header.trim());
 
-  const result = [];
-  let currentMainEntry: any = {};
+  const sinhVienKey = headersRow1[headersRow1.length - 1].trim();  // The last key (dynamic "sinhVien")
+
+  const result: any[] = [];
+  let currentMainEntry: any = null;
 
   for (let i = 2; i < data.length; i++) {
     const row = data[i];
     const sinhvienData: any = {};
 
-    const isMainEntry = mainHeaders.every((index: number) => {
-      const colIndex = index;
-      return (
-        row[colIndex] !== undefined && row[colIndex].toString().trim() !== ''
-      );
+    // Check if the row represents a new main entry (new class, department, etc.)
+    const isMainEntry = mainHeaders.every((header: string, index: number) => {
+      const colValue = row[index];
+      return colValue !== undefined && colValue.toString().trim() !== '';
     });
 
     if (isMainEntry) {
+      // If we already have an entry, push it to the result array
       if (currentMainEntry) {
         result.push(currentMainEntry);
       }
 
+      // Create a new entry for the current row
       currentMainEntry = {};
       mainHeaders.forEach((header: any, index: number) => {
         const cellValue = row[index];
@@ -95,8 +98,10 @@ const parseData = async (data: (string | number)[][]) => {
           cellValue !== undefined ? cellValue.toString().trim() : '';
       });
 
-      currentMainEntry[headersRow1[headersRow1.length - 1]] = [];
+      // Initialize the dynamic sinhVien array
+      currentMainEntry[sinhVienKey] = [];
 
+      // Gather sinhVien data for this entry based on the second row (sinhVien headers)
       sinhviensHeaders.forEach((header: any, index: number) => {
         const cellIndex = headersRow1.length + index;
         const cellValue = row[cellIndex];
@@ -104,12 +109,12 @@ const parseData = async (data: (string | number)[][]) => {
           cellValue !== undefined ? cellValue.toString().trim() : '';
       });
 
+      // Add sinhVien data if valid
       if (Object.values(sinhvienData).some((value) => value !== '')) {
-        currentMainEntry[headersRow1[headersRow1.length - 1]].push(
-          sinhvienData,
-        );
+        currentMainEntry[sinhVienKey].push(sinhvienData);
       }
     } else if (currentMainEntry) {
+      // Append sinhVien data to the current entry
       sinhviensHeaders.forEach((header: any, index: number) => {
         const cellIndex = headersRow1.length + index;
         const cellValue = row[cellIndex];
@@ -117,14 +122,14 @@ const parseData = async (data: (string | number)[][]) => {
           cellValue !== undefined ? cellValue.toString().trim() : '';
       });
 
+      // Add sinhVien data if valid
       if (Object.values(sinhvienData).some((value) => value !== '')) {
-        currentMainEntry[headersRow1[headersRow1.length - 1]].push(
-          sinhvienData,
-        );
+        currentMainEntry[sinhVienKey].push(sinhvienData);
       }
     }
   }
 
+  // Push the last entry after the loop ends
   if (currentMainEntry) {
     result.push(currentMainEntry);
   }
