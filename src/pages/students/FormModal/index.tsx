@@ -56,19 +56,6 @@ const StudentsFormModal = ({
   });
 
   useEffect(() => {
-    if (id) {
-      const selectedData = data.find((item: any) => item.id === id);
-      if (selectedData) {
-        Object.keys(selectedData).forEach((key) => {
-          setValue(key, selectedData[key]);
-        });
-      }
-    } else {
-      reset(defaultValues);
-    }
-  }, [id]);
-
-  useEffect(() => {
     setOpen(isShowModal);
   }, [isShowModal]);
 

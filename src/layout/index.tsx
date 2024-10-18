@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Box } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useQuery } from '@tanstack/react-query';
@@ -10,17 +9,29 @@ import {
   COURSES_SCHEDULES_MANAGEMENT_LINK,
   STUDENTS_MANAMENT_LINK,
 } from '../links';
-import CoursesGrades from '../pages/grades';
 import CoursesSchedules from '../pages/schedules';
-import StudentsManagement from '../pages/students';
-import { get } from '../service/request';
+import LecturersManagement from '../pages/students';
+import { post } from '../service/request';
 import useLoadingStore from '../store/loadingStore';
+import useUserStore from '../store/userStore';
+import useAcademyStore from '../store/academyStore';
+import CoursesGrades from '../pages/department';
 
 function DashBoardLayout() {
-  const isLoading = useLoadingStore((state) => state.isLoading);
-  const { data } = useQuery({
+  const { isLoading, setIsLoading } = useLoadingStore();
+  const setDepartments = useAcademyStore((state) => state.setDepartments);
+  const setUserInfo = useUserStore((state) => state.setUserInfo);
+
+  useQuery({
     queryKey: ['getData'],
-    queryFn: () => get({ url: 'userData' }),
+    queryFn: async () => {
+      // setIsLoading(true);
+      const { data: userInfo } = await post({ url: 'user/detail' });
+      const { data: departments } = await post({ url: 'khoa/getList' });
+      setUserInfo(userInfo);
+      setDepartments(departments);
+      // setIsLoading(false);
+    },
   });
 
   return (
@@ -37,15 +48,15 @@ function DashBoardLayout() {
           <Routes>
             <Route
               path='*'
-              element={<Navigate to={STUDENTS_MANAMENT_LINK} replace />}
+              element={<Navigate to={STUDENTS_MANAMENT_LINK} replace={true} />}
             />
             <Route
               path={STUDENTS_MANAMENT_LINK}
-              element={<StudentsManagement />}
+              element={<LecturersManagement />}
             />
             <Route
               path={`${STUDENTS_MANAMENT_LINK}/:id`} // Add the new route with ID parameter
-              element={<StudentsManagement />} // Specify the component to render
+              element={<LecturersManagement />} // Specify the component to render
             />
             <Route
               path={COURSES_GRADES_MANAGEMENT_LINK}

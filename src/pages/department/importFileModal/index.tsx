@@ -4,8 +4,13 @@ import { UploadFileOutlined } from '@mui/icons-material';
 import { Box, Button, Modal, Typography } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { parseExcelFile } from '../../../utils/parseFile';
+import {
+  loadExcelData,
+  parceSubheaderFile,
+  parseExcelFile,
+} from '../../../utils/parseFile';
+import ExcelTable from '../../../components/excelTable';
+import * as xlsx from 'xlsx';
 
 interface ImportFileModalProps {
   isShowModal?: boolean;
@@ -34,9 +39,7 @@ const ImportFileModal = ({
   onClose,
 }: ImportFileModalProps) => {
   const [open, setOpen] = useState(false);
-  const [tableHeader, setTableHeader] = useState<any>({});
-  const [tableContent, setTableContent] = useState<any[]>([]);
-  const [fileData, setFileData] = useState<any>(null);
+  const [fileData, setFileData] = useState<any>([]);
   const [fileName, setFileName] = useState<string>('');
 
   useEffect(() => {
@@ -46,25 +49,13 @@ const ImportFileModal = ({
   const handleFileUpload = async (e: any) => {
     const file = e.target.files[0];
     if (file) {
-      const parsedData: any = await parseExcelFile(file);
-      console.log(parsedData);
-      const dataKeys = Object.keys(parsedData[0]);
-      let formatedDataKeys: any[] = [];
-      let mapedParsedData: any[] = [];
-      formatedDataKeys = dataKeys.map((dataKey) => {
-        return { field: dataKey, headerName: dataKey };
-      });
-      mapedParsedData = parsedData.map((data: any) => {
-        return {
-          ...data,
-          id: uuidv4(),
-        };
-      });
-
-      setFileData(parsedData);
-      setTableHeader(formatedDataKeys);
-      setTableContent(mapedParsedData);
       setFileName(file.name);
+
+      const parsedData: any = await loadExcelData(file);
+      setFileData(parsedData);
+    } else {
+      setFileName('');
+      setFileData([]);
     }
   };
 
@@ -87,7 +78,7 @@ const ImportFileModal = ({
         <Box sx={{ my: 2 }}>
           <Box sx={{ my: 1 }}>
             <Button
-              disabled={!fileData}
+              disabled={!fileData.length}
               onClick={handleUploadFile}
               variant='contained'
               sx={{ mr: 1 }}
@@ -105,14 +96,14 @@ const ImportFileModal = ({
               />
             </Button>
           </Box>
-          {fileData && (
+          {fileData.length > 0 && (
             <Typography variant='body2' sx={{ color: '#666' }}>
               File imported: {fileName}
             </Typography>
           )}
         </Box>
 
-        {!(Object.keys(tableHeader).length > 0 && tableContent) ? (
+        {!(fileData.length > 0) ? (
           <Box
             sx={{
               flex: 1,
@@ -132,32 +123,13 @@ const ImportFileModal = ({
         ) : (
           <Box
             sx={{
-              maxHeight: '400px',
-              maxWidth: '800px',
+              height: '400px',
+              maxWidth: '1000px',
               width: '100%',
-              overflowY: 'scroll',
+              overflow: 'scroll',
             }}
           >
-            <DataGrid
-              sx={{
-                minHeight: '400px',
-              }}
-              disableColumnMenu
-              disableColumnFilter
-              disableColumnResize
-              disableColumnSorting
-              rows={tableContent}
-              columns={tableHeader}
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 8,
-                  },
-                },
-              }}
-              pageSizeOptions={[5]}
-              disableRowSelectionOnClick
-            />
+            <ExcelTable data={fileData} />
           </Box>
         )}
       </Box>

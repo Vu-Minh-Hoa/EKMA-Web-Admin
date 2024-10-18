@@ -8,173 +8,20 @@ import { DataGrid, GridColDef, GridRowId } from '@mui/x-data-grid';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { v4 } from 'uuid';
 import { CATEGORY_TEXTS } from '../../constants/common';
 import { STUDENTS_MANAMENT_LINK } from '../../links';
+import { post } from '../../service/request';
+import useAcademyStore from '../../store/academyStore';
 import useLoadingStore from '../../store/loadingStore';
 import StudentsFormModal from './FormModal';
-import { get } from '../../service/request';
 import ImportFileModal from './importFileModal';
+import { SelectComponent } from '../../components/select';
 
-const rows = [
-  {
-    id: v4(),
-    maGV: 'GV001',
-    hoTen: 'Nguyễn Văn An',
-    gioiTinh: 'Nam',
-    khoaName: 'Khoa Công Nghệ Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV002',
-    hoTen: 'Trần Thị Bích Ngọc',
-    gioiTinh: 'Nữ',
-    khoaName: 'Khoa Điện Tử Viễn Thông',
-  },
-  {
-    id: v4(),
-    maGV: 'GV003',
-    hoTen: 'Lê Minh Quân',
-    gioiTinh: 'Nam',
-    khoaName: 'Khoa An Toàn Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV004',
-    hoTen: 'Phạm Thị Lan',
-    gioiTinh: 'Nữ',
-    khoaName: 'Khoa Công Nghệ Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV005',
-    hoTen: 'Hoàng Văn Sơn',
-    gioiTinh: 'Nam',
-    khoaName: 'Khoa Điện Tử Viễn Thông',
-  },
-  {
-    id: v4(),
-    maGV: 'GV006',
-    hoTen: 'Vũ Thị Mai',
-    gioiTinh: 'Nữ',
-    khoaName: 'Khoa An Toàn Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV007',
-    hoTen: 'Đặng Quốc Dũng',
-    gioiTinh: 'Nam',
-    khoaName: 'Khoa Công Nghệ Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV008',
-    hoTen: 'Bùi Thị Hạnh',
-    gioiTinh: 'Nữ',
-    khoaName: 'Khoa Điện Tử Viễn Thông',
-  },
-  {
-    id: v4(),
-    maGV: 'GV009',
-    hoTen: 'Trịnh Văn Long',
-    gioiTinh: 'Nam',
-    khoaName: 'Khoa An Toàn Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV010',
-    hoTen: 'Ngô Thị Thu Trang',
-    gioiTinh: 'Nữ',
-    khoaName: 'Khoa Công Nghệ Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV011',
-    hoTen: 'Dương Quang Huy',
-    gioiTinh: 'Nam',
-    khoaName: 'Khoa Điện Tử Viễn Thông',
-  },
-  {
-    id: v4(),
-    maGV: 'GV012',
-    hoTen: 'Phùng Thị Nhung',
-    gioiTinh: 'Nữ',
-    khoaName: 'Khoa An Toàn Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV013',
-    hoTen: 'Nguyễn Hoàng Kiệt',
-    gioiTinh: 'Nam',
-    khoaName: 'Khoa Công Nghệ Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV014',
-    hoTen: 'Trương Thị Mỹ Linh',
-    gioiTinh: 'Nữ',
-    khoaName: 'Khoa Điện Tử Viễn Thông',
-  },
-  {
-    id: v4(),
-    maGV: 'GV015',
-    hoTen: 'Đỗ Minh Tú',
-    gioiTinh: 'Nam',
-    khoaName: 'Khoa An Toàn Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV016',
-    hoTen: 'Hoàng Thị Phương',
-    gioiTinh: 'Nữ',
-    khoaName: 'Khoa Công Nghệ Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV017',
-    hoTen: 'Võ Văn Hải',
-    gioiTinh: 'Nam',
-    khoaName: 'Khoa Điện Tử Viễn Thông',
-  },
-  {
-    id: v4(),
-    maGV: 'GV018',
-    hoTen: 'Mai Thị Thuỷ',
-    gioiTinh: 'Nữ',
-    khoaName: 'Khoa An Toàn Thông Tin',
-  },
-  {
-    id: v4(),
-    maGV: 'GV019',
-    hoTen: 'Lý Minh Trí',
-    gioiTinh: 'Nam',
-    khoaName: 'Khoa Công Nghệ Thông Tin',
-  },
-];
-
-const StudentsManagement = () => {
-  const columns: GridColDef<(typeof rows)[number]>[] = [
-    {
-      field: 'maGV',
-      headerName: 'Mã GV',
-      width: 90,
-    },
-    {
-      field: 'hoTen',
-      headerName: 'Họ tên',
-      width: 150,
-    },
-    {
-      field: 'gioiTinh',
-      headerName: 'Giới tính',
-      width: 100,
-    },
-    {
-      field: 'khoaName',
-      headerName: 'Tên khoa',
-      description: 'This column has a value getter and is not sortable.',
-      width: 450,
-    },
+const LecturersManagement = () => {
+  const columns: GridColDef[] = [
+    { field: 'maSV', headerName: 'Mã SV', width: 120 },
+    { field: 'hoTen', headerName: 'Họ tên', width: 250 },
+    { field: 'gioiTinh', headerName: 'Giới tính', width: 650 },
     {
       field: 'action',
       headerName: '',
@@ -192,7 +39,6 @@ const StudentsManagement = () => {
               <ModeEditIcon />
             </Button>
             <Button
-              sx={{ backgroundColor: '#F56C6C' }}
               variant='contained'
               size='small'
               onClick={() => handleDeleteData(params.id)}
@@ -204,30 +50,23 @@ const StudentsManagement = () => {
       },
     },
   ];
-  const { data } = useQuery({
-    queryKey: ['getData'],
-    queryFn: () => get({ url: 'giangvien' }),
-  });
+  const departments = useAcademyStore((state) => state.departments);
   const [isOpenImportModal, setIsOpenImportModal] = useState<boolean>(false);
   const [isOpenFormModal, setIsOpenFormModal] = useState<boolean>(false);
-  const [sinhViensData, setSinhViensData] = useState<any>(rows);
+  const [giangVienData, setGiangVienData] = useState<any>([]);
   const [selectedId, setSelectedId] = useState<any>();
+  const [selectedKhoa, setSelectedKhoa] = useState<string>(departments[0]?.id);
   const { isLoading, setIsLoading } = useLoadingStore();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setIsLoading(true);
-    const timeoutSetLoading = setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
-    return () => clearTimeout(timeoutSetLoading);
-  }, []);
+  const { data } = useQuery({
+    queryKey: ['getData'],
+    queryFn: () => post({ url: 'giangvien' }),
+  });
 
   useEffect(() => {
     console.log('useQuery: ', data);
   }, [data]);
-
-  const handleFileUpload = (fileData: any) => {};
 
   const handleDeleteData = (id: GridRowId) => {
     setSelectedId(id);
@@ -237,6 +76,14 @@ const StudentsManagement = () => {
     navigate(`${id}`, { replace: true });
     setIsOpenFormModal(true);
     setSelectedId(id);
+  };
+
+  const handleFileUpload = (data: File) => {
+    console.log(data);
+  };
+
+  const hanldeSelectKhoa = (value: string) => {
+    setSelectedKhoa(value);
   };
 
   const handleOpenUploadFileModal = () => {
@@ -266,7 +113,7 @@ const StudentsManagement = () => {
       <StudentsFormModal
         isShowModal={isOpenFormModal}
         onClose={hanldeCloseFormModal}
-        data={sinhViensData}
+        data={giangVienData}
       />
       <Box sx={{ marginBottom: '20px' }}>
         <Typography sx={{ fontSize: '30px', fontWeight: 'bold' }}>
@@ -284,7 +131,17 @@ const StudentsManagement = () => {
           }}
         >
           <Box sx={{ width: 'fit-content' }}>
-            <TextField size='small' placeholder='Search' />
+            <TextField
+              sx={{ marginRight: '10px' }}
+              size='small'
+              placeholder='Search'
+            />
+            <SelectComponent
+              label='Khoa'
+              options={departments}
+              value={selectedKhoa || null}
+              onChange={hanldeSelectKhoa}
+            />
           </Box>
           <Box
             sx={{
@@ -308,13 +165,13 @@ const StudentsManagement = () => {
         </Box>
 
         <Box sx={{ minHeight: '500px', width: '100%' }}>
-          {sinhViensData.length > 0 ? (
+          {giangVienData.length > 0 ? (
             <DataGrid
               disableColumnMenu
               disableColumnFilter
               disableColumnResize
               disableColumnSorting
-              rows={sinhViensData}
+              rows={giangVienData}
               columns={columns}
               initialState={{
                 pagination: {
@@ -350,4 +207,4 @@ const StudentsManagement = () => {
   );
 };
 
-export default StudentsManagement;
+export default LecturersManagement;

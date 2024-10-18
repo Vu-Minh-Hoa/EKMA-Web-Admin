@@ -27,7 +27,7 @@ import ImportFileModal from './importFileModal';
 import { set } from 'react-hook-form';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const CourseSchedule = () => {
+const CoursesGrades = () => {
   const columns: GridColDef<(typeof CoureseGrad.data)[number]>[] = [
     {
       field: 'maSV',
@@ -42,7 +42,7 @@ const CourseSchedule = () => {
     {
       field: 'gioiTinh',
       headerName: 'Giới tính',
-      width: 680,
+      width: 650,
     },
     {
       field: 'action',
@@ -159,7 +159,7 @@ const CourseSchedule = () => {
       />
       <Box sx={{ marginBottom: '20px' }}>
         <Typography sx={{ fontSize: '30px', fontWeight: 'bold' }}>
-          {CATEGORY_TEXTS.COURSES_SCHEDULES}
+          {CATEGORY_TEXTS.COURSES_GRADES}
         </Typography>
       </Box>
       <Box>
@@ -172,7 +172,7 @@ const CourseSchedule = () => {
             marginBottom: 2,
           }}
         >
-          {/* <Box sx={{ width: 'fit-content' }}>
+          <Box sx={{ width: 'fit-content' }}>
             <FormControl sx={{ width: '120px', marginRight: '10px' }}>
               <InputLabel size='small' id='demo-simple-select-label'>
                 Khóa
@@ -219,7 +219,7 @@ const CourseSchedule = () => {
                 })}
               </Select>
             </FormControl>
-          </Box> */}
+          </Box>
 
           <Box
             sx={{
@@ -285,4 +285,4 @@ const CourseSchedule = () => {
   );
 };
 
-export default CourseSchedule;
+export default CoursesGrades;

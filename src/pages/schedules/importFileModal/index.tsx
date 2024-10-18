@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import {
   loadExcelData,
   parceSubheaderFile,
+  parseExcelData,
   parseExcelFile,
 } from '../../../utils/parseFile';
 import ExcelTable from '../../../components/excelTable';
@@ -40,26 +41,7 @@ const ImportFileModal = ({
 }: ImportFileModalProps) => {
   const [open, setOpen] = useState(false);
   const [fileData, setFileData] = useState<any>([]);
-  const [fileData2, setFileData2] = useState<any>([]);
   const [fileName, setFileName] = useState<string>('');
-
-
-  const test = async () => {
-    const res = await fetch(`src\\assets\\mockData\\classesWithStudents.csv`)
-    const arrayBuffer = await res.arrayBuffer();
-
-        // Parse the Excel file
-        const workbook = xlsx.read(arrayBuffer, { type: 'array' });
-    setFileData2(workbook)
-  }
-
-useEffect(() => {
-  test()
-}, [])
-
-  useEffect(() => {
-    console.log('fileData2: '  ,fileData2);
-  }, [fileData2]);
 
   useEffect(() => {
     setOpen(isShowModal);
@@ -70,8 +52,10 @@ useEffect(() => {
     if (file) {
       setFileName(file.name);
 
-      const parsedData: any = await loadExcelData(file);
-      setFileData(parsedData);
+      const excelData: any = await loadExcelData(file);
+      const parsedData = await parceSubheaderFile(file);
+      console.log(parsedData);
+      setFileData(excelData);
     } else {
       setFileName('');
       setFileData([]);
