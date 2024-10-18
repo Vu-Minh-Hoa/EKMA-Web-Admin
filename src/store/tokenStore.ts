@@ -1,13 +1,21 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-type TLoadingStore = {
-  token: string;
-  setToken: (token: string) => void;
-};
+interface ITokenState {
+  token: string | null;
+  setToken: (token: string | null) => void;
+}
 
-const useTokenStore = create<TLoadingStore>((set) => ({
-  token: '',
-  setToken: (token: string) => set({ token }),
-}));
+export const useTokenStore = create(
+  persist<ITokenState>(
+    (set) => ({
+      token: '',
+      setToken: (token) => set({ token }),
+    }),
+    {
+      name: 'token', // name of the item in the storage (must be unique)
+    },
+  ),
+)
 
 export default useTokenStore;

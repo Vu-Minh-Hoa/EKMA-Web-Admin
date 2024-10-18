@@ -10,20 +10,20 @@ import Stack from '@mui/material/Stack';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CATEGORY_TEXTS } from '../../constants/common';
 import {
-  COURSES_GRADES_MANAGEMENT_LINK,
   COURSES_SCHEDULES_MANAGEMENT_LINK,
-  STUDENTS_MANAMENT_LINK,
+  LECTURER_MANAGEMENT_LINK,
+  STUDENT_MANAGEMENT_LINK,
 } from '../../links';
 
 const mainListItems = [
   {
-    text: CATEGORY_TEXTS.STUDENTS_MANAMENT,
-    link: STUDENTS_MANAMENT_LINK,
+    text: CATEGORY_TEXTS.LECTURER_MANAGMENT,
+    link: LECTURER_MANAGEMENT_LINK,
     icon: <PeopleRoundedIcon />,
   },
   {
-    text: CATEGORY_TEXTS.COURSES_GRADES,
-    link: COURSES_GRADES_MANAGEMENT_LINK,
+    text: CATEGORY_TEXTS.STUDENTS_MANAGMENT,
+    link: STUDENT_MANAGEMENT_LINK,
     icon: <AnalyticsRoundedIcon />,
   },
   {
@@ -64,17 +64,6 @@ export default function MenuContent() {
           </ListItem>
         ))}
       </List>
-
-      {/* <List dense>
-        {secondaryListItems.map((item, index) => (
-          <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-            <ListItemButton>
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List> */}
     </Stack>
   );
 }

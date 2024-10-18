@@ -5,23 +5,21 @@ import { UploadFileOutlined } from '@mui/icons-material';
 import LockIcon from '@mui/icons-material/Lock';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import { DataGrid, GridRowId } from '@mui/x-data-grid';
-import { useMutation } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { SelectComponent } from '../../components/select';
-import { CATEGORY_TEXTS } from '../../constants/common';
-import { useDebounce } from '../../hooks/useDebouce';
-import { LECTURER_MANAGEMENT_LINK } from '../../links';
-import { deleteMethod, post } from '../../service/request';
-import useAcademyStore from '../../store/academyStore';
-import useLoadingStore from '../../store/loadingStore';
 import StudentsFormModal from './FormModal';
 import ImportFileModal from './importFileModal';
 import { v4 } from 'uuid';
 import { toast } from 'react-toastify';
+import { DataGrid } from '@mui/x-data-grid';
+import { useMutation } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { SelectComponent } from '../../../components/select';
+import { CATEGORY_TEXTS } from '../../../constants/common';
+import { useDebounce } from '../../../hooks/useDebouce';
+import { post, deleteMethod } from '../../../service/request';
+import useAcademyStore from '../../../store/academyStore';
+import useLoadingStore from '../../../store/loadingStore';
 
-const StudentsManagement = () => {
+const GradesManagement = () => {
   const columns: any[] = [
     {
       field: 'maSV',
@@ -477,4 +475,4 @@ const StudentsManagement = () => {
   );
 };
 
-export default StudentsManagement;
+export default GradesManagement;

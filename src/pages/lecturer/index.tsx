@@ -2,29 +2,25 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UploadFileOutlined } from '@mui/icons-material';
-import LockIcon from '@mui/icons-material/Lock';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import { DataGrid, GridRowId } from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SelectComponent } from '../../components/select';
 import { CATEGORY_TEXTS } from '../../constants/common';
 import { useDebounce } from '../../hooks/useDebouce';
-import { LECTURER_MANAGEMENT_LINK } from '../../links';
 import { deleteMethod, post } from '../../service/request';
 import useAcademyStore from '../../store/academyStore';
 import useLoadingStore from '../../store/loadingStore';
 import StudentsFormModal from './FormModal';
 import ImportFileModal from './importFileModal';
-import { v4 } from 'uuid';
-import { toast } from 'react-toastify';
 
-const StudentsManagement = () => {
+const LecturersManagement = () => {
   const columns: any[] = [
     {
-      field: 'maSV',
+      field: 'maGV',
       headerName: 'Mã GV',
       width: 120,
       renderCell: (params) => (
@@ -72,9 +68,9 @@ const StudentsManagement = () => {
       ),
     },
     {
-      field: 'phone',
-      headerName: 'Số điện thoại',
-      width: 150,
+      field: 'gioiTinh',
+      headerName: 'Giới tính',
+      width: 100,
       renderCell: (params) => (
         <Box
           sx={{
@@ -96,8 +92,8 @@ const StudentsManagement = () => {
       ),
     },
     {
-      field: 'email',
-      headerName: 'Email',
+      field: 'khoaName',
+      headerName: 'Khoa',
       width: 350,
       renderCell: (params) => (
         <Box
@@ -126,38 +122,24 @@ const StudentsManagement = () => {
       width: 300,
       renderCell: (params) => {
         return (
-          <Box
-            sx={{
-              float: 'right',
-              display: 'flex',
-              gap: '5px',
-              alignItems: 'center',
-              height: '100%',
-            }}
-          >
+          <Box sx={{ float: 'right' }}>
             <Button
+              sx={{ mr: 1 }}
               variant='contained'
               size='small'
               onClick={() =>
-                hanldeToggleActive(params.row.maSV, params.row.userAct)
+                hanldeToggleActive(params.row.maGV, params.row.userAct)
               }
             >
               {params.row.userAct ? 'Deactive' : 'Active'}
             </Button>
             <Button
+              sx={{ mr: 1 }}
               variant='contained'
               size='small'
               onClick={() => handleEditData(params.row)}
             >
               <ModeEditIcon />
-            </Button>
-            <Button
-              variant='contained'
-              size='small'
-              sx={{ backgroundColor: '#F56C6C' }}
-              onClick={() => handleResetPassword(params.row.maSV)}
-            >
-              Reset <LockIcon sx={{ height: '18px', marginBottom: '4px' }} />
             </Button>
           </Box>
         );
@@ -167,80 +149,56 @@ const StudentsManagement = () => {
   const departments = useAcademyStore((state) => state.departments);
   const [isOpenImportModal, setIsOpenImportModal] = useState<boolean>(false);
   const [isOpenFormModal, setIsOpenFormModal] = useState<boolean>(false);
-  const [sinhVienData, setSinhVienData] = useState<any>([]);
-  const [selectedSinhVien, setSelectedSinhVien] = useState<any>();
+  const [giangVienData, setGiangVienData] = useState<any>([]);
+  const [selectedLecturer, setSelectedLecturer] = useState<any>();
   const [selectedKhoa, setSelectedKhoa] = useState<number>(0);
-  const [selectedLopCQ, setSelectLopCQ] = useState<any>(0);
-  const [lopCQData, setLopCQData] = useState<any>([]);
-  const [searchSinhVien, setSearchSinhVien] = useState<string>('');
-  const { setIsLoading } = useLoadingStore();
-  const { mutate: mutateGetLopCQ } = useMutation({
-    mutationFn: (payload: number) => {
+  const [searchGiangVien, setSearchGiangVien] = useState<string>('');
+  const { isLoading, setIsLoading } = useLoadingStore();
+  const { mutate: mutateFilterGiangVien } = useMutation({
+    mutationFn: (payload: { maGV: string; khoaID: number }) => {
       setIsLoading(true);
       return post({
-        url: `khoa/getLop/${payload}`,
-      });
-    },
-    onSuccess: (data) => {
-      if (!data.length) {
-        setIsLoading(false);
-        setSinhVienData([]);
-        setLopCQData([]);
-        setSelectLopCQ(null);
-        return;
-      }
-
-      setLopCQData(data);
-      setSelectLopCQ(data[0].id);
-    },
-  });
-  const { mutate: mutateFilterSinhVien } = useMutation({
-    mutationFn: (payload: { maSV: string; lophocID: string }) => {
-      setIsLoading(true);
-      return post({
-        url: `/lophoccq/Lớp ${payload.lophocID}`,
-        // data: payload,
+        url: '/giangvien/search',
+        data: payload,
       });
     },
     onSettled: () => {
       setIsLoading(false);
     },
     onSuccess: (data) => {
-      console.log(data);
-      const mappedData = data.map((item: any) => ({ ...item, id: v4() }));
-      console.log(mappedData);
-      setSinhVienData(mappedData);
+      setGiangVienData(data);
     },
   });
-  const { mutate: mutateDeactiveSinhVien } = useMutation({
+  const { mutate: mutateDeactiveGiangVien } = useMutation({
     mutationFn: (payload: string) => {
       setIsLoading(true);
       return deleteMethod({
-        url: `/delete/${payload}`,
+        url: `/giangvien/delete/${payload}`,
       });
     },
     onSettled: () => {
-      mutateFilterSinhVien({ maSV: searchSinhVien, lophocID: selectedLopCQ });
       setIsLoading(false);
+      mutateFilterGiangVien({ maGV: searchGiangVien, khoaID: selectedKhoa });
     },
   });
-  const { mutate: mutateActiveSinhVien } = useMutation({
+  const { mutate: mutateActiveGiangVien } = useMutation({
     mutationFn: (payload: string) => {
       setIsLoading(true);
       return post({
-        url: `/sinhvien/updateAct/${payload}`,
+        url: `/giangvien/updateAct/${payload}`,
       });
     },
     onSettled: () => {
-      mutateFilterSinhVien({ maSV: searchSinhVien, lophocID: selectedLopCQ });
       setIsLoading(false);
+      mutateFilterGiangVien({ maGV: searchGiangVien, khoaID: selectedKhoa });
     },
   });
   const { mutate: mutateImportData } = useMutation({
     mutationFn: (payload: any) => {
+      console.log(payload);
       setIsLoading(true);
       return post({
-        url: `/sinhvien/addList`,
+        url: `/giangvien/addList`,
         data: payload,
       });
     },
@@ -248,49 +206,43 @@ const StudentsManagement = () => {
       setIsLoading(false);
     },
     onSuccess: () => {
-      mutateFilterSinhVien({ maSV: searchSinhVien, lophocID: selectedLopCQ });
+      mutateFilterGiangVien({ maGV: searchGiangVien, khoaID: selectedKhoa });
     },
   });
-  const { mutate: mutateCreateSinhVien } = useMutation({
+  const { mutate: mutateCreateGiangVien } = useMutation({
     mutationFn: (payload: any) => {
-      payload.delete('khoaID');
       setIsLoading(true);
       return post({
-        url: `/sinhvien/add/${payload.lopCQ}`,
-        data: {
-          ...payload,
-          he: 'Kỹ sư chính quy - k2020-2025',
-          truong: 'Hoc viện Kỹ thuật mật mã',
-        },
+        url: `/giangvien/add`,
+        data: payload,
       });
     },
     onSettled: () => {
       setIsLoading(false);
     },
     onSuccess: () => {
-      mutateFilterSinhVien({ maSV: searchSinhVien, lophocID: selectedLopCQ });
+      mutateFilterGiangVien({ maGV: searchGiangVien, khoaID: selectedKhoa });
       setIsOpenFormModal(false);
     },
   });
-  const { mutate: mutateResetPassWord } = useMutation({
+  const { mutate: mutateEditGiangVien } = useMutation({
     mutationFn: (payload: any) => {
       setIsLoading(true);
+      const departmentName = departments.find(
+        (item) => item.id === payload.khoaID,
+      )?.label;
+      payload.khoaName = departmentName;
       return post({
-        url: `/sv/updatepass/${payload}`,
+        url: `/giangvien/update`,
+        data: payload,
       });
     },
     onSettled: () => {
       setIsLoading(false);
     },
-    onError: () => {
-      toast.error('Reset password failed', {
-        toastId: v4(),
-      });
-    },
     onSuccess: () => {
-      toast.success('Reset password successfully', {
-        toastId: v4(),
-      });
+      mutateFilterGiangVien({ maGV: searchGiangVien, khoaID: selectedKhoa });
+      setSelectedLecturer(null);
       setIsOpenFormModal(false);
     },
   });
@@ -301,50 +253,37 @@ const StudentsManagement = () => {
 
   useEffect(() => {
     if (selectedKhoa) {
-      mutateGetLopCQ(selectedKhoa);
-    }
-  }, [selectedKhoa]);
-
-  useEffect(() => {
-    if (selectedKhoa) {
-      mutateGetLopCQ(selectedKhoa);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (selectedKhoa && selectedLopCQ) {
-      useDebounceFilterSinhVien({
-        maSV: searchSinhVien,
-        lophocID: selectedLopCQ,
+      useDebounceFilterGiangVien({
+        maGV: searchGiangVien,
+        khoaID: selectedKhoa,
       });
     }
-  }, [selectedLopCQ, searchSinhVien]);
+  }, [selectedKhoa, searchGiangVien]);
 
-  const useDebounceFilterSinhVien = useDebounce(mutateFilterSinhVien);
+  const useDebounceFilterGiangVien = useDebounce(mutateFilterGiangVien);
 
-  const handleEditData = (sinhVien: any) => {
+  const handleEditData = (lecturer) => {
     setIsOpenFormModal(true);
-    setSelectedSinhVien(sinhVien);
+    setSelectedLecturer(lecturer);
   };
 
   const handleFileUpload = (data: File) => {
     mutateImportData(data);
   };
 
-  const handleResetPassword = (maSV: string) => {
-    mutateResetPassWord(maSV);
-  };
-
   const hanldeToggleActive = (value: string, isActive: number) => {
     if (isActive) {
-      mutateDeactiveSinhVien(value);
+      mutateDeactiveGiangVien(value);
     } else {
-      mutateActiveSinhVien(value);
+      mutateActiveGiangVien(value);
     }
   };
 
-  const handleCreateSinhVien = (data: any) => {
-    return mutateCreateSinhVien(data);
+  const handleCreateUpdateGiangVien = (data: any) => {
+    if (selectedLecturer) {
+      return mutateEditGiangVien(data);
+    }
+    return mutateCreateGiangVien(data);
   };
 
   const handleOpenUploadFileModal = () => {
@@ -361,6 +300,7 @@ const StudentsManagement = () => {
 
   const hanldeCloseFormModal = () => {
     setIsOpenFormModal(false);
+    setSelectedLecturer(null);
   };
 
   return (
@@ -371,12 +311,11 @@ const StudentsManagement = () => {
         onClose={handleCloseModal}
       />
       <StudentsFormModal
-        onSubmit={handleCreateSinhVien}
+        value={selectedLecturer}
+        onSubmit={handleCreateUpdateGiangVien}
         isShowModal={isOpenFormModal}
-        value={selectedSinhVien}
         onClose={hanldeCloseFormModal}
-        lopCQData={lopCQData}
-        data={sinhVienData}
+        data={giangVienData}
       />
       <Box sx={{ marginBottom: '20px' }}>
         <Typography sx={{ fontSize: '30px', fontWeight: 'bold' }}>
@@ -393,23 +332,18 @@ const StudentsManagement = () => {
             marginBottom: 2,
           }}
         >
-          <Box sx={{ width: 'fit-content', display: 'flex', gap: '10px' }}>
+          <Box sx={{ width: 'fit-content' }}>
             <SelectComponent
               label='Khoa'
               options={departments}
               value={selectedKhoa}
               onChange={(value) => setSelectedKhoa(value)}
             />
-            <SelectComponent
-              label='Lớp'
-              options={lopCQData}
-              value={selectedLopCQ}
-              onChange={(value) => setSelectLopCQ(value)}
-            />
             <TextField
+              sx={{ marginLeft: '10px' }}
               size='small'
               placeholder='Search'
-              onChange={(e) => setSearchSinhVien(e.target.value)}
+              onChange={(e) => setSearchGiangVien(e.target.value)}
             />
           </Box>
           <Box
@@ -434,14 +368,13 @@ const StudentsManagement = () => {
         </Box>
 
         <Box sx={{ minHeight: '500px', width: '100%' }}>
-          {sinhVienData?.length > 0 ? (
+          {giangVienData?.length > 0 ? (
             <DataGrid
-              sx={{ minHeight: '500px' }}
               disableColumnMenu
               disableColumnFilter
               disableColumnResize
               disableColumnSorting
-              rows={sinhVienData}
+              rows={giangVienData}
               columns={columns}
               initialState={{
                 pagination: {
@@ -477,4 +410,4 @@ const StudentsManagement = () => {
   );
 };
 
-export default StudentsManagement;
+export default LecturersManagement;

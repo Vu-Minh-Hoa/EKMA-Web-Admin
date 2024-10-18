@@ -11,8 +11,6 @@ import { SelectComponent } from '../../../components/select';
 import { CoureseGrad } from '../../../constants/common';
 import useAcademyStore from '../../../store/academyStore';
 import { FormInputDropdown } from '../../../components/controller/controllerSelectInput';
-import DateRangePicker from '../../../components/dateRangePicker';
-import { FormInputDate } from '../../../components/controller/controllerDatePicker';
 
 const style = {
   display: 'flex',
@@ -30,31 +28,23 @@ const style = {
 };
 
 const defaultValues = {
-  maSV: '',
+  maGV: '',
   hoTen: '',
   gioiTinh: '',
-  email: '',
-  phone: '',
   khoaID: 0,
-  lopCQ: '',
-  ngaySinh: new Date(),
 };
 
 const schema = yup.object().shape({
-  maSV: yup.string().required('Required field!'),
+  maGV: yup.string().required('Required field!'),
   hoTen: yup.string().required('Required field!'),
-  email: yup.string().email().required('Required field!'),
-  phone: yup.string().required('Required field!'),
   gioiTinh: yup.string().required('Required field!'),
   khoaID: yup.number().required('Required field!'),
-  lopCQ: yup.string().required('Required field!'),
 });
 
 const StudentsFormModal = ({
   isShowModal = false,
   onSubmit,
   onClose,
-  lopCQData,
   value,
 }: any) => {
   const departments = useAcademyStore((state) => state.departments);
@@ -65,16 +55,6 @@ const StudentsFormModal = ({
   });
 
   useEffect(() => {
-    handleSetValue();
-  }, []);
-
-  useEffect(() => {
-    if (!isShowModal) {
-      handleSetValue();
-    }
-  }, [isShowModal]);
-
-  useEffect(() => {
     if (!value) {
       handleSetDefaultValue();
     } else {
@@ -83,29 +63,28 @@ const StudentsFormModal = ({
   }, [value]);
 
   useEffect(() => {
-    if (departments.length > 0 && lopCQData.length > 0) {
-      setValue('khoaID', departments[0].id);
-      setValue('lopCQ', lopCQData[0].id);
+    if (!isShowModal) {
+      handleSetDefaultValue();
     }
-  }, [departments, lopCQData]);
+  }, [isShowModal]);
+
+  useEffect(() => {
+    if (departments.length > 0) {
+      setValue('khoaID', departments[0].id);
+    }
+  }, [departments]);
 
   const handleSetValue = () => {
-    setValue('maSV', value?.maSV);
-    setValue('hoTen', value?.hoTen);
-    setValue('gioiTinh', value?.gioiTinh);
-    setValue('ngaySinh', value?.ngaySinh);
-    setValue('khoaID', value?.khoaID);
-    setValue('phone', value?.phone);
-    setValue('email', value?.email);
-    setValue('lopCQ', value?.lopCQ);
+    setValue('maGV', value.maGV);
+    setValue('hoTen', value.hoTen);
+    setValue('gioiTinh', value.gioiTinh);
+    setValue('khoaID', value.khoaID);
   };
 
   const handleSetDefaultValue = () => {
-    setValue('maSV', '');
+    setValue('maGV', '');
     setValue('hoTen', '');
     setValue('gioiTinh', 'Nam');
-    setValue('phone', '');
-    setValue('email', '');
   };
 
   useEffect(() => {
@@ -126,11 +105,8 @@ const StudentsFormModal = ({
       <Box sx={style}>
         <Typography variant='h5'>Add Students</Typography>
         <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', my: 4 }}>
+          <FormInputText name='maGV' control={control} label='Mã giảng viên' />
           <FormInputText name='hoTen' control={control} label='Họ tên' />
-          <FormInputText name='maSV' control={control} label='Mã sinh viên' />
-          <FormInputText name='phone' control={control} label='Số điện thoại' />
-          <FormInputText name='email' control={control} label='Email' />
-          <FormInputDate name='ngaySinh' control={control} label='Năm sinh' />
           <FormInputDropdown
             name='gioiTinh'
             control={control}
@@ -139,12 +115,6 @@ const StudentsFormModal = ({
               { id: 'Nam', label: 'Nam' },
               { id: 'Nữ', label: 'Nữ' },
             ]}
-          />
-          <FormInputDropdown
-            name='lopCQ'
-            control={control}
-            label='Lớp chính quy'
-            options={lopCQData}
           />
           <FormInputDropdown
             name='khoaID'

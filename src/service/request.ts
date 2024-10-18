@@ -2,14 +2,20 @@
 import axiosBase from 'axios';
 
 const initRequest = () => {
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
-  const headers = {
+  const tokenString = localStorage.getItem('token');
+  const token = tokenString ? JSON.parse(tokenString).state.token : null;
+  const headers: any = {
     'Content-Type': 'application/json',
-    Authorization: 'Bearer ' + token, 'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': '*'
   };
 
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const axios = axiosBase.create({
-    baseURL: 'https://a1b2c3d4e5f6.ngrok.io',
+    // baseURL: 'http://192.168.1.236:8080',
+    baseURL: 'https://ad0f-2405-4803-fdbd-e350-d2d-c5c9-3912-5d56.ngrok-free.app',
     headers,
   });
 
@@ -31,7 +37,7 @@ const generateUrl = (url: string, params: any) => {
     const keys = Object.keys(params);
     if (keys.length > 0) {
       for (const key of keys) {
-        genUrl = genUrl.replace(`{${key}}`, params[key]);
+        genUrl = genUrl.replace(`{${key} } `, params[key]);
       }
     }
   }
@@ -44,9 +50,9 @@ const generateQueryString = (query: any) => {
   if (keys.length > 0) {
     const qString = [];
     for (const key of keys) {
-      qString.push(`${key}=${query[key]}`);
+      qString.push(`${key}=${query[key]} `);
     }
-    return `?${qString.join('&')}`;
+    return `? ${qString.join('&')} `;
   }
   return '';
 };
@@ -68,7 +74,7 @@ const request = async (callback: any, reqOption: any) => {
 export const get = async (reqOption: any) => {
   return await request((axios: any, genUrl: any) => {
     return axios.get(
-      `${genUrl}${generateQueryString(reqOption.query)}`,
+      `${genUrl}${generateQueryString(reqOption.query)} `,
       reqOption.config,
     );
   }, reqOption);
