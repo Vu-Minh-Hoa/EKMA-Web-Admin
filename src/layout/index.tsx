@@ -10,7 +10,7 @@ import {
   COURSES_SCHEDULES_MANAGEMENT_LINK,
   STUDENTS_MANAMENT_LINK,
 } from '../links';
-import CoursesGrades from '../pages/grades';
+import CoursesGrades from '../pages/department';
 import CoursesSchedules from '../pages/schedules';
 import StudentsManagement from '../pages/students';
 import { get } from '../service/request';
@@ -20,7 +20,7 @@ function DashBoardLayout() {
   const isLoading = useLoadingStore((state) => state.isLoading);
   const { data } = useQuery({
     queryKey: ['getData'],
-    queryFn: () => get({ url: 'userData' }),
+    queryFn: () => get({ url: 'userData' }), 
   });
 
   return (

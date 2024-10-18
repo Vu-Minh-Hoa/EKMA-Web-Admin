@@ -4,6 +4,7 @@ import * as xlsx from "xlsx";
 export const loadExcelData = async (file: any) => {
   const data = await file.arrayBuffer();
   const workbook = xlsx.read(data, { type: 'array' });
+  console.log('loadExcelData: ');
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
   return xlsx.utils.sheet_to_json(sheet, { header: 1, defval: '' });

@@ -1,12 +1,23 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, Button, Modal, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Modal,
+  Select,
+  Typography,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import * as yup from 'yup';
 import { FormInputText } from '../../../components/controller/controllerInputText';
+import { CoureseGrad } from '../../../constants/common';
 
 interface ImportFileModalProps {
   isShowModal?: boolean;
@@ -30,14 +41,14 @@ const style = {
 };
 
 const defaultValues = {
-  maGV: '',
+  maSV: '',
   hoTen: '',
   gioiTinh: '',
   khoaName: '',
 };
 
 const schema = yup.object().shape({
-  maGV: yup.string().required('Required field!'),
+  maSV: yup.string().required('Required field!'),
   hoTen: yup.string().required('Required field!'),
   gioiTinh: yup.string().required('Required field!'),
   khoaName: yup.string().required('Required field!'),
@@ -50,6 +61,11 @@ const StudentsFormModal = ({
 }: ImportFileModalProps) => {
   const { id } = useParams();
   const [open, setOpen] = useState(false);
+  const [khoaSelected, setKhoaSelected] = useState<any>(
+    CoureseGrad.khoa[0].id,
+  );
+  const [lopSelection, setLopSelection] = useState<any>(CoureseGrad.lop);
+  const [lopSelected, setLopSelected] = useState<any>('');
   const { handleSubmit, reset, control, setValue } = useForm<any>({
     defaultValues: defaultValues,
     resolver: yupResolver(schema),
@@ -63,6 +79,8 @@ const StudentsFormModal = ({
           setValue(key, selectedData[key]);
         });
       }
+      setKhoaSelected(selectedData.khoa);
+      setLopSelected(selectedData.lop);
     } else {
       reset(defaultValues);
     }
@@ -71,6 +89,20 @@ const StudentsFormModal = ({
   useEffect(() => {
     setOpen(isShowModal);
   }, [isShowModal]);
+
+  useEffect(() => {
+    handleFilterData()
+  }, [khoaSelected, lopSelected]);
+
+
+  const handleFilterData = () => {
+
+    const filteredLop = CoureseGrad.lop.filter((item) => {
+      return khoaSelected === item.khoa;
+    });
+
+    setLopSelection(filteredLop);
+  };
 
   const onSubmit = (data: any) => console.log(data);
 
@@ -84,10 +116,51 @@ const StudentsFormModal = ({
       <Box sx={style}>
         <Typography variant='h5'>Add Students</Typography>
         <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', my: 4 }}>
-          <FormInputText name='maGV' control={control} label='Mã giảng viên' />
+          <FormInputText name='maSV' control={control} label='Mã giảng viên' />
           <FormInputText name='hoTen' control={control} label='Họ tên' />
           <FormInputText name='gioiTinh' control={control} label='Giới tính' />
-          <FormInputText name='khoaName' control={control} label='Tên khoa' />
+          <FormControl sx={{ width: '100%', marginRight: '10px' }}>
+            <InputLabel size='small' id='demo-simple-select-label'>
+              Khóa
+            </InputLabel>
+            <Select
+              size='small'
+              labelId='demo-simple-select-label'
+              id='demo-simple-select'
+              value={khoaSelected}
+              label='Age'
+              onChange={(e) => setKhoaSelected(e.target.value)}
+            >
+              {CoureseGrad.khoa.map((item) => {
+                return (
+                  <MenuItem key={item.id} value={item.id}>
+                    {item.name}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+          <FormControl sx={{ width: '100%' }}>
+            <InputLabel size='small' id='demo-simple-select-label'>
+              Môn
+            </InputLabel>
+            <Select
+              size='small'
+              labelId='demo-simple-select-label'
+              id='demo-simple-select'
+              value={lopSelected}
+              label='Age'
+              onChange={(e) => setLopSelected(e.target.value)}
+            >
+              {lopSelection.map((item) => {
+                return (
+                  <MenuItem key={item.id} value={item.id}>
+                    {item.name}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
         </Box>
 
         {/* <FormInputDate name='dateValue' control={control} label='Date Input' /> */}

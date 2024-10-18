@@ -3,19 +3,18 @@
 import { UploadFileOutlined } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { Box, Button, TextField, Typography } from '@mui/material';
-import { DataGrid, GridColDef, GridRowId } from '@mui/x-data-grid';
-import { useQuery } from '@tanstack/react-query';
+import { Box, Button, Typography } from '@mui/material';
+import { GridColDef, GridRowId } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { v4 } from 'uuid';
+import * as xlsx from 'xlsx';
+import ExcelTable from '../../components/excelTable';
 import { CATEGORY_TEXTS } from '../../constants/common';
 import { STUDENTS_MANAMENT_LINK } from '../../links';
 import useLoadingStore from '../../store/loadingStore';
-import { get } from '../../service/request';
-import ImportFileModal from './importFileModal';
 import StudentsFormModal from './FormModal';
-import DateRangePicker from '../../components/dateRangePicker';
+import ImportFileModal from './importFileModal';
+import { loadExcelData } from '../../utils/parseFile';
 
 const CoursesSchedules = () => {
   const columns: GridColDef<any[number]>[] = [
@@ -69,13 +68,14 @@ const CoursesSchedules = () => {
       },
     },
   ];
-  const { data } = useQuery({
-    queryKey: ['coursesSchedules'],
-    queryFn: () => get({ url: 'lichhoc' }),
-  });
+  // const { data } = useQuery({
+  //   queryKey: ['coursesSchedules'],
+  //   queryFn: () => get({ url: 'lichhoc' }),
+  // });
   const [isOpenImportModal, setIsOpenImportModal] = useState<boolean>(false);
   const [isOpenFormModal, setIsOpenFormModal] = useState<boolean>(false);
   const [sinhViensData, setSinhViensData] = useState<any>([]);
+  const [tableData, setTableData] = useState<any>([]);
   const [selectedId, setSelectedId] = useState<any>();
   const { isLoading, setIsLoading } = useLoadingStore();
   const navigate = useNavigate();
@@ -88,9 +88,18 @@ const CoursesSchedules = () => {
     return () => clearTimeout(timeoutSetLoading);
   }, []);
 
+  const test = async () => {
+    const res = await fetch('mockData/classesWithStudents.csv');
+    console.log('running: ', res);
+
+    // Parse the Excel file
+    const workbook = await loadExcelData(res);
+    setTableData(workbook);
+  };
+
   useEffect(() => {
-    console.log('useQuery: ', data);
-  }, [data]);
+    test();
+  }, []);
 
   const handleFileUpload = (fileData: any) => {};
 
@@ -171,24 +180,8 @@ const CoursesSchedules = () => {
         </Box>
 
         <Box sx={{ minHeight: '500px', width: '100%' }}>
-          {data?.length > 0 ? (
-            <DataGrid
-              disableColumnMenu
-              disableColumnFilter
-              disableColumnResize
-              disableColumnSorting
-              rows={data}
-              columns={columns}
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 8,
-                  },
-                },
-              }}
-              pageSizeOptions={[5]}
-              disableRowSelectionOnClick
-            />
+          {tableData?.length > 0 ? (
+            <ExcelTable data={tableData} />
           ) : (
             <Box
               sx={{
