@@ -61,9 +61,7 @@ const StudentsFormModal = ({
 }: ImportFileModalProps) => {
   const { id } = useParams();
   const [open, setOpen] = useState(false);
-  const [khoaSelected, setKhoaSelected] = useState<any>(
-    CoureseGrad.khoa[0].id,
-  );
+  const [khoaSelected, setKhoaSelected] = useState<any>(CoureseGrad.khoa[0].id);
   const [lopSelection, setLopSelection] = useState<any>(CoureseGrad.lop);
   const [lopSelected, setLopSelected] = useState<any>('');
   const { handleSubmit, reset, control, setValue } = useForm<any>({
@@ -91,12 +89,10 @@ const StudentsFormModal = ({
   }, [isShowModal]);
 
   useEffect(() => {
-    handleFilterData()
+    handleFilterData();
   }, [khoaSelected, lopSelected]);
 
-
   const handleFilterData = () => {
-
     const filteredLop = CoureseGrad.lop.filter((item) => {
       return khoaSelected === item.khoa;
     });

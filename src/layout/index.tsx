@@ -10,7 +10,6 @@ import {
   LECTURER_MANAGEMENT_LINK,
   STUDENT_MANAGEMENT_LINK,
 } from '../links';
-import CoursesGrades from '../pages/department';
 import LecturersManagement from '../pages/lecturer';
 import CoursesSchedules from '../pages/schedules';
 import StudentsManagement from '../pages/students';

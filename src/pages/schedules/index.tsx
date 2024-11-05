@@ -2,47 +2,65 @@
 import { UploadFileOutlined } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import {
-  Box,
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { DataGrid, GridColDef, GridRowId } from '@mui/x-data-grid';
-import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CATEGORY_TEXTS, CoureseGrad } from '../../constants/common';
-import {
-  COURSES_GRADES_MANAGEMENT_LINK,
-  LECTURER_MANAGEMENT_LINK,
-} from '../../links';
-import { get } from '../../service/request';
+import { COURSES_GRADES_MANAGEMENT_LINK } from '../../links';
 import useLoadingStore from '../../store/loadingStore';
 import StudentsFormModal from './FormModal';
 import ImportFileModal from './importFileModal';
-import { set } from 'react-hook-form';
 
+const rows = [
+  {
+    id: 1,
+    tenLop: 'Lớp 10A1',
+  },
+  {
+    id: 2,
+    tenLop: 'Lớp 10A2',
+  },
+  {
+    id: 3,
+    tenLop: 'Lớp 10B1',
+  },
+  {
+    id: 4,
+    tenLop: 'Lớp 11A1',
+  },
+  {
+    id: 5,
+    tenLop: 'Lớp 11A2',
+  },
+  {
+    id: 6,
+    tenLop: 'Lớp 11B1',
+  },
+  {
+    id: 7,
+    tenLop: 'Lớp 12A1',
+  },
+  {
+    id: 8,
+    tenLop: 'Lớp 12A2',
+  },
+  {
+    id: 9,
+    tenLop: 'Lớp 12B1',
+  },
+  {
+    id: 10,
+    tenLop: 'Lớp 12B2',
+  },
+];
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const CourseSchedule = () => {
-  const columns: GridColDef<(typeof CoureseGrad.data)[number]>[] = [
+  const columns: any = [
     {
-      field: 'maSV',
-      headerName: 'Mã SV',
+      field: 'tenLop',
+      headerName: 'Tên lớp',
       width: 120,
-    },
-    {
-      field: 'hoTen',
-      headerName: 'Họ tên',
-      width: 250,
-    },
-    {
-      field: 'gioiTinh',
-      headerName: 'Giới tính',
-      width: 680,
     },
     {
       field: 'action',
@@ -73,13 +91,9 @@ const CourseSchedule = () => {
       },
     },
   ];
-  const { data } = useQuery({
-    queryKey: ['getData'],
-    queryFn: () => get({ url: 'giangvien' }),
-  });
   const [isOpenImportModal, setIsOpenImportModal] = useState<boolean>(false);
   const [isOpenFormModal, setIsOpenFormModal] = useState<boolean>(false);
-  const [sinhViensData, setSinhViensData] = useState<any>(CoureseGrad.data);
+  const [schedulesData, setSchedulesData] = useState<any>(rows);
   const [lopSelection, setLopSelection] = useState<any>(CoureseGrad.lop);
   const [selectedId, setSelectedId] = useState<any>();
   const [filter, setFilter] = useState<any>({
@@ -88,33 +102,6 @@ const CourseSchedule = () => {
   });
   const { setIsLoading } = useLoadingStore();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    handleFilterData();
-  }, [filter]);
-
-  const handleFilterData = () => {
-    if (!filter.course && !filter.class) return;
-
-    const filteredData = CoureseGrad.data.filter((item) => {
-      if (filter.course && filter.class) {
-        return item.khoa === filter.course && item.lop === filter.class;
-      }
-      if (filter.course === '') {
-        return item.lop === filter.class;
-      } else if (filter.class === '') {
-        return item.khoa === filter.course;
-      }
-      return item;
-    });
-
-    const filteredLop = CoureseGrad.lop.filter((item) => {
-      return filter.course === item.khoa;
-    });
-
-    setLopSelection(filteredLop);
-    setSinhViensData(filteredData);
-  };
 
   const handleFileUpload = (fileData: any) => {};
 
@@ -155,7 +142,7 @@ const CourseSchedule = () => {
       <StudentsFormModal
         isShowModal={isOpenFormModal}
         onClose={hanldeCloseFormModal}
-        data={sinhViensData}
+        data={schedulesData}
       />
       <Box sx={{ marginBottom: '20px' }}>
         <Typography sx={{ fontSize: '30px', fontWeight: 'bold' }}>
@@ -172,55 +159,6 @@ const CourseSchedule = () => {
             marginBottom: 2,
           }}
         >
-          {/* <Box sx={{ width: 'fit-content' }}>
-            <FormControl sx={{ width: '120px', marginRight: '10px' }}>
-              <InputLabel size='small' id='demo-simple-select-label'>
-                Khóa
-              </InputLabel>
-              <Select
-                size='small'
-                labelId='demo-simple-select-label'
-                id='demo-simple-select'
-                value={filter.course}
-                label='Age'
-                onChange={(e) =>
-                  setFilter({ course: e.target.value, class: '' })
-                }
-              >
-                {CoureseGrad.khoa.map((item) => {
-                  return (
-                    <MenuItem key={item.id} value={item.id}>
-                      {item.name}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
-            <FormControl sx={{ width: '120px' }}>
-              <InputLabel size='small' id='demo-simple-select-label'>
-                Môn
-              </InputLabel>
-              <Select
-                size='small'
-                labelId='demo-simple-select-label'
-                id='demo-simple-select'
-                value={filter.class}
-                label='Age'
-                onChange={(e) =>
-                  setFilter({ ...filter, class: e.target.value })
-                }
-              >
-                {lopSelection.map((item) => {
-                  return (
-                    <MenuItem key={item.id} value={item.id}>
-                      {item.name}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
-          </Box> */}
-
           <Box
             sx={{
               alignItems: 'center',
@@ -229,6 +167,24 @@ const CourseSchedule = () => {
               gap: 1,
             }}
           >
+            {/* <SelectComponent
+              label='Khoa'
+              options={departments}
+              value={selectedKhoa}
+              onChange={(value) => setSelectedKhoa(value)}
+            />
+            <SelectComponent
+              label='Khoa'
+              options={departments}
+              value={selectedKhoa}
+              onChange={(value) => setSelectedKhoa(value)}
+            />
+            <SelectComponent
+              label='Khoa'
+              options={departments}
+              value={selectedKhoa}
+              onChange={(value) => setSelectedKhoa(value)}
+            /> */}
             <Button onClick={handleOpenFormModal} variant='contained'>
               + Add
             </Button>
@@ -243,13 +199,13 @@ const CourseSchedule = () => {
         </Box>
 
         <Box sx={{ minHeight: '500px', width: '100%' }}>
-          {sinhViensData.length > 0 ? (
+          {schedulesData.length > 0 ? (
             <DataGrid
               disableColumnMenu
               disableColumnFilter
               disableColumnResize
               disableColumnSorting
-              rows={sinhViensData}
+              rows={schedulesData}
               columns={columns}
               initialState={{
                 pagination: {

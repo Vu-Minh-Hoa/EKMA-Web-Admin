@@ -33,6 +33,7 @@ const ImportFileGradeModal = ({
   onClose,
 }: ImportFileGradeModalProps) => {
   const [open, setOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<any>([]);
   const [fileData, setFileData] = useState<any>([]);
   const [fileName, setFileName] = useState<string>('');
 
@@ -47,17 +48,20 @@ const ImportFileGradeModal = ({
 
       const excelData: any = await loadExcelData(file);
       const parsedData = await parceSubheaderFile(file);
-      console.log(parsedData);
-      setFileData(excelData);
+
+      if (excelData?.length === 0) return;
+
+      setPreviewData(excelData);
+      setFileData(parsedData);
     } else {
       setFileName('');
-      setFileData([]);
+      setPreviewData([]);
     }
   };
 
-  const handleUploadFile = () => {
-    onUpload && onUpload(fileData);
-    handleClose();
+  const handleUploadFile = async () => {
+    const res = onUpload && onUpload(fileData);
+    if (res) handleClose();
   };
 
   const handleClose = () => {
@@ -74,7 +78,7 @@ const ImportFileGradeModal = ({
         <Box sx={{ my: 2 }}>
           <Box sx={{ my: 1 }}>
             <Button
-              disabled={!fileData.length}
+              disabled={!previewData.length}
               onClick={handleUploadFile}
               variant='contained'
               sx={{ mr: 1 }}
@@ -92,14 +96,14 @@ const ImportFileGradeModal = ({
               />
             </Button>
           </Box>
-          {fileData.length > 0 && (
+          {previewData.length > 0 && (
             <Typography variant='body2' sx={{ color: '#666' }}>
               File imported: {fileName}
             </Typography>
           )}
         </Box>
 
-        {!(fileData.length > 0) ? (
+        {!(previewData.length > 0) ? (
           <Box
             sx={{
               flex: 1,
@@ -125,7 +129,7 @@ const ImportFileGradeModal = ({
               overflow: 'scroll',
             }}
           >
-            <ExcelTable data={fileData} />
+            <ExcelTable data={previewData} />
           </Box>
         )}
       </Box>

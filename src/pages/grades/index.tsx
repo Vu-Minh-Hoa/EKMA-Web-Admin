@@ -16,15 +16,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CATEGORY_TEXTS, CoureseGrad } from '../../constants/common';
-import {
-  COURSES_GRADES_MANAGEMENT_LINK,
-  LECTURER_MANAGEMENT_LINK,
-} from '../../links';
+import { COURSES_GRADES_MANAGEMENT_LINK } from '../../links';
 import { get } from '../../service/request';
 import useLoadingStore from '../../store/loadingStore';
 import StudentsFormModal from './FormModal';
 import ImportFileModal from './importFileModal';
-import { set } from 'react-hook-form';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const CoursesGrades = () => {
@@ -73,10 +69,6 @@ const CoursesGrades = () => {
       },
     },
   ];
-  const { data } = useQuery({
-    queryKey: ['getData'],
-    queryFn: () => get({ url: 'giangvien' }),
-  });
   const [isOpenImportModal, setIsOpenImportModal] = useState<boolean>(false);
   const [isOpenFormModal, setIsOpenFormModal] = useState<boolean>(false);
   const [sinhViensData, setSinhViensData] = useState<any>(CoureseGrad.data);
@@ -92,31 +84,6 @@ const CoursesGrades = () => {
   useEffect(() => {
     handleFilterData();
   }, [filter]);
-
-  const handleFilterData = () => {
-    if (!filter.course && !filter.class) return;
-
-    const filteredData = CoureseGrad.data.filter((item) => {
-      if (filter.course && filter.class) {
-        return item.khoa === filter.course && item.lop === filter.class;
-      }
-      if (filter.course === '') {
-        return item.lop === filter.class;
-      } else if (filter.class === '') {
-        return item.khoa === filter.course;
-      }
-      return item;
-    });
-
-    const filteredLop = CoureseGrad.lop.filter((item) => {
-      return filter.course === item.khoa;
-    });
-
-    setLopSelection(filteredLop);
-    setSinhViensData(filteredData);
-  };
-
-  const handleFileUpload = (fileData: any) => {};
 
   const handleDeleteData = (id: GridRowId) => {
     setSelectedId(id);
@@ -141,7 +108,6 @@ const CoursesGrades = () => {
   };
 
   const hanldeCloseFormModal = () => {
-    navigate(`/${COURSES_GRADES_MANAGEMENT_LINK}`, { replace: true });
     setIsOpenFormModal(false);
   };
 

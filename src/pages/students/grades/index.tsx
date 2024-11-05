@@ -1,30 +1,45 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { UploadFileOutlined } from '@mui/icons-material';
-import LockIcon from '@mui/icons-material/Lock';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import GradesModal from './FormModal';
-import ImportFileModal from '../importGradesFileModal';
-import { v4 } from 'uuid';
-import { toast } from 'react-toastify';
 import { DataGrid } from '@mui/x-data-grid';
 import { useMutation } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
-import { SelectComponent } from '../../../components/select';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { v4 } from 'uuid';
 import { CATEGORY_TEXTS } from '../../../constants/common';
 import { useDebounce } from '../../../hooks/useDebouce';
-import { post, deleteMethod } from '../../../service/request';
-import useAcademyStore from '../../../store/academyStore';
+import { deleteMethod, post } from '../../../service/request';
 import useLoadingStore from '../../../store/loadingStore';
-import { useParams } from 'react-router-dom';
+import GradesFormModal from './FormModal';
+import { DeleteOutline } from '@mui/icons-material';
 
 const GradesManagement = () => {
   const columns: any[] = [
     {
-      field: 'maSV',
-      headerName: 'Mã GV',
+      field: 'monHoc',
+      headerName: 'Môn học',
+      width: 300,
+    },
+    {
+      field: 'diemTP1',
+      headerName: 'Điểm TP1',
+      width: 120,
+    },
+    {
+      field: 'diemTP2',
+      headerName: 'Điểm TP2',
+      width: 120,
+    },
+    {
+      field: 'diemTK',
+      headerName: 'Điểm TK',
+      width: 120,
+    },
+    {
+      field: 'diemChu',
+      headerName: 'Điểm chữ',
       width: 120,
     },
     {
@@ -50,13 +65,22 @@ const GradesManagement = () => {
             >
               <ModeEditIcon />
             </Button>
+            <Button
+              variant='contained'
+              size='small'
+              sx={{ backgroundColor: '#F56C6C' }}
+              onClick={() => handleDeleteData(params.row.id)}
+            >
+              <DeleteOutline />
+            </Button>
           </Box>
         );
       },
     },
   ];
   const { id: maSV } = useParams();
-  const [gradesData, setGradesData] = useState<any>([]);
+  const [isOpenEditModal, setIsOpenEditModal] = useState<boolean>(false);
+  const [gradesData, setGradesData] = useState<any[]>([]);
   const [selectedGrade, setSelectedGrade] = useState<any>();
   const [searchGrade, setSearchGrade] = useState<string>('');
   const { setIsLoading } = useLoadingStore();
@@ -71,20 +95,18 @@ const GradesManagement = () => {
       setIsLoading(false);
     },
     onSuccess: (data) => {
-      const mappedData = data.map((item: any) => ({ ...item, id: v4() }));
-      setGradesData(mappedData);
+      setGradesData(data);
     },
   });
-  const { mutate: mutateCreateGrade } = useMutation({
+  const { mutate: mutateEditGrade } = useMutation({
     mutationFn: (payload: any) => {
-      payload.delete('khoaID');
       setIsLoading(true);
       return post({
-        url: `/sinhvien/add/${payload.lopCQ}`,
+        url: `diem/updateSV`,
         data: {
+          maSV,
+          monhocID: selectedGrade?.id,
           ...payload,
-          he: 'Kỹ sư chính quy - k2020-2025',
-          truong: 'Hoc viện Kỹ thuật mật mã',
         },
       });
     },
@@ -92,6 +114,24 @@ const GradesManagement = () => {
       setIsLoading(false);
     },
     onSuccess: () => {
+      setIsOpenEditModal(false);
+      mutateFilterGrade();
+    },
+  });
+  const { mutate: mutateDeleteGrade } = useMutation({
+    mutationFn: (payload: any) => {
+      console.log(payload);
+      setIsLoading(true);
+      return post({
+        url: `diem/delete`,
+        data: payload,
+      });
+    },
+    onSettled: () => {
+      setIsLoading(false);
+    },
+    onSuccess: () => {
+      setIsOpenEditModal(false);
       mutateFilterGrade();
     },
   });
@@ -104,81 +144,84 @@ const GradesManagement = () => {
 
   const useDebounceFilterGrade = useDebounce(mutateFilterGrade);
 
-  const handleEditData = (sinhVien: any) => {
-    setSelectedGrade(sinhVien);
+  const handleEditData = (grade: any) => {
+    setSelectedGrade(grade);
+    setIsOpenEditModal(true);
   };
 
-  const handleCreateGrade = (data: any) => {
-    return mutateCreateGrade(data);
+  const handleDeleteData = (monhocId: string) => {
+    mutateDeleteGrade({
+      maSV: maSV,
+      monhocId,
+    });
+  };
+
+  const handleEditPoint = (data: any) => {
+    mutateEditGrade(data);
+  };
+
+  const handleCloseModal = () => {
+    setIsOpenEditModal(false);
+    setSelectedGrade(undefined);
   };
 
   return (
-    <Box>
-      <Box sx={{ marginBottom: '20px' }}>
-        <Typography sx={{ fontSize: '30px', fontWeight: 'bold' }}>
-          {CATEGORY_TEXTS.GRADES_MANAGEMENT}
-        </Typography>
-      </Box>
+    <>
+      <GradesFormModal
+        onSubmit={handleEditPoint}
+        value={selectedGrade}
+        isShowModal={isOpenEditModal}
+        onClose={handleCloseModal}
+      />
       <Box>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-
-            marginBottom: 2,
-          }}
-        >
-          <Box sx={{ width: 'fit-content', display: 'flex', gap: '10px' }}>
-            <TextField
-              size='small'
-              placeholder='Search'
-              onChange={(e) => setSearchGrade(e.target.value)}
-            />
+        <Box sx={{ marginBottom: '20px' }}>
+          <Typography sx={{ fontSize: '30px', fontWeight: 'bold' }}>
+            {CATEGORY_TEXTS.GRADES_MANAGEMENT}
+          </Typography>
+        </Box>
+        <Box>
+          <Box sx={{ minHeight: '500px', width: '100%' }}>
+            {gradesData?.length > 0 ? (
+              <DataGrid
+                sx={{ minHeight: '500px' }}
+                disableColumnMenu
+                disableColumnFilter
+                disableColumnResize
+                disableColumnSorting
+                rows={gradesData}
+                columns={columns}
+                initialState={{
+                  pagination: {
+                    paginationModel: {
+                      pageSize: 8,
+                    },
+                  },
+                }}
+                pageSizeOptions={[5]}
+                disableRowSelectionOnClick
+              />
+            ) : (
+              <Box
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  border: '1px solid #ccc',
+                  width: '100%',
+                  height: '400px',
+                  borderRadius: '5px',
+                }}
+              >
+                <Typography variant='h4' sx={{ color: '#ccc' }}>
+                  No data
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Box>
-
-        <Box sx={{ minHeight: '500px', width: '100%' }}>
-          {gradesData?.length > 0 ? (
-            <DataGrid
-              sx={{ minHeight: '500px' }}
-              disableColumnMenu
-              disableColumnFilter
-              disableColumnResize
-              disableColumnSorting
-              rows={gradesData}
-              columns={columns}
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 8,
-                  },
-                },
-              }}
-              pageSizeOptions={[5]}
-              disableRowSelectionOnClick
-            />
-          ) : (
-            <Box
-              sx={{
-                flex: 1,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                border: '1px solid #ccc',
-                width: '100%',
-                height: '400px',
-                borderRadius: '5px',
-              }}
-            >
-              <Typography variant='h4' sx={{ color: '#ccc' }}>
-                No data
-              </Typography>
-            </Box>
-          )}
-        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

@@ -6,10 +6,10 @@ import { Box, Button, Modal, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import { FormInputDate } from '../../../components/controller/controllerDatePicker';
-import { FormInputText } from '../../../components/controller/controllerInputText';
-import { FormInputDropdown } from '../../../components/controller/controllerSelectInput';
-import useAcademyStore from '../../../store/academyStore';
+import { FormInputDate } from '../../../../components/controller/controllerDatePicker';
+import { FormInputText } from '../../../../components/controller/controllerInputText';
+import { FormInputDropdown } from '../../../../components/controller/controllerSelectInput';
+import useAcademyStore from '../../../../store/academyStore';
 
 const style = {
   display: 'flex',
@@ -27,34 +27,25 @@ const style = {
 };
 
 const defaultValues = {
-  maSV: '',
-  hoTen: '',
-  gioiTinh: '',
-  email: '',
-  phone: '',
-  khoaID: 0,
-  lopCQ: '',
-  ngaySinh: new Date(),
+  monHoc: '',
+  diemTP1: '',
+  diemTP2: '',
+  diemTK: '',
 };
 
 const schema = yup.object().shape({
-  maSV: yup.string().required('Required field!'),
-  hoTen: yup.string().required('Required field!'),
-  email: yup.string().email().required('Required field!'),
-  phone: yup.string().required('Required field!'),
-  gioiTinh: yup.string().required('Required field!'),
-  khoaID: yup.number().required('Required field!'),
-  lopCQ: yup.string().required('Required field!'),
+  monHoc: yup.string().required('Required field!'),
+  diemTP1: yup.string().required('Required field!'),
+  diemTP2: yup.string().required('Required field!'),
+  diemTK: yup.string().required('Required field!'),
 });
 
-const StudentsFormModal = ({
+const GradesFormModal = ({
   isShowModal = false,
   onSubmit,
   onClose,
-  lopCQData,
   value,
 }: any) => {
-  const departments = useAcademyStore((state) => state.departments);
   const [open, setOpen] = useState(false);
   const { handleSubmit, control, setValue } = useForm<any>({
     defaultValues: defaultValues,
@@ -66,13 +57,6 @@ const StudentsFormModal = ({
   }, []);
 
   useEffect(() => {
-    if (!isShowModal) {
-      handleSetValue();
-    }
-  }, [isShowModal]);
-
-  useEffect(() => {
-    console.log(value);
     if (!value) {
       handleSetDefaultValue();
     } else {
@@ -81,29 +65,25 @@ const StudentsFormModal = ({
   }, [value]);
 
   useEffect(() => {
-    if (departments.length > 0 && lopCQData.length > 0) {
-      setValue('khoaID', departments[0].id);
-      setValue('lopCQ', lopCQData[0].id);
+    if (!value) {
+      handleSetDefaultValue();
+    } else {
+      handleSetValue();
     }
-  }, [departments, lopCQData]);
+  }, [value]);
 
   const handleSetValue = () => {
-    setValue('maSV', value?.maSV);
-    setValue('hoTen', value?.hoTen);
-    setValue('gioiTinh', value?.gioiTinh);
-    setValue('ngaySinh', value?.ngaySinh);
-    setValue('khoaID', value?.khoaID);
-    setValue('phone', value?.phone);
-    setValue('email', value?.email);
-    setValue('lopCQ', value?.lopCQ);
+    setValue('monHoc', value?.monHoc);
+    setValue('diemTP1', value?.diemTP1);
+    setValue('diemTP2', value?.diemTP2);
+    setValue('diemTK', value?.diemTK);
   };
 
   const handleSetDefaultValue = () => {
-    setValue('maSV', '');
-    setValue('hoTen', '');
-    setValue('gioiTinh', 'Nam');
-    setValue('phone', '');
-    setValue('email', '');
+    setValue('monHoc', '');
+    setValue('diemTP1', '');
+    setValue('diemTP2', '');
+    setValue('diemTK', '');
   };
 
   useEffect(() => {
@@ -124,31 +104,26 @@ const StudentsFormModal = ({
       <Box sx={style}>
         <Typography variant='h5'>Add Students</Typography>
         <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', my: 4 }}>
-          <FormInputText name='hoTen' control={control} label='Họ tên' />
-          <FormInputText name='maSV' control={control} label='Mã sinh viên' />
-          <FormInputText name='phone' control={control} label='Số điện thoại' />
-          <FormInputText name='email' control={control} label='Email' />
-          <FormInputDate name='ngaySinh' control={control} label='Năm sinh' />
-          <FormInputDropdown
-            name='gioiTinh'
+          <FormInputText
+            disabled={true}
+            name='monHoc'
             control={control}
-            label='Giới tính'
-            options={[
-              { id: 'Nam', label: 'Nam' },
-              { id: 'Nữ', label: 'Nữ' },
-            ]}
+            label='Môn học'
           />
-          <FormInputDropdown
-            name='lopCQ'
+          <FormInputText
+            name='diemTP1'
             control={control}
-            label='Lớp chính quy'
-            options={lopCQData}
+            label='Điểm thành phần 1'
           />
-          <FormInputDropdown
-            name='khoaID'
+          <FormInputText
+            name='diemTP2'
             control={control}
-            label='Khoa'
-            options={departments}
+            label='Điểm thành phần 2'
+          />
+          <FormInputText
+            name='diemTK'
+            control={control}
+            label='Điểm tổng kết'
           />
         </Box>
 
@@ -160,4 +135,4 @@ const StudentsFormModal = ({
   );
 };
 
-export default StudentsFormModal;
+export default GradesFormModal;

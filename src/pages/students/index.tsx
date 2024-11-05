@@ -26,7 +26,7 @@ const StudentsManagement = () => {
   const columns: any[] = [
     {
       field: 'maSV',
-      headerName: 'Mã GV',
+      headerName: 'Mã SV',
       width: 120,
       renderCell: (params) => (
         <Box
@@ -187,7 +187,7 @@ const StudentsManagement = () => {
   const [searchSinhVien, setSearchSinhVien] = useState<string>('');
   const { setIsLoading } = useLoadingStore();
   const { mutate: mutateGetLopCQ } = useMutation({
-    mutationFn: (payload: number) => {
+    mutationFn: (payload: any) => {
       setIsLoading(true);
       return post({
         url: `khoa/getLop/${payload}`,
@@ -210,8 +210,8 @@ const StudentsManagement = () => {
     mutationFn: (payload: { maSV: string; lophocID: string }) => {
       setIsLoading(true);
       return post({
-        url: `/lophoccq/Lớp ${payload.lophocID}`,
-        // data: payload,
+        url: `/search/SV`,
+        data: payload,
       });
     },
     onSettled: () => {
@@ -246,7 +246,7 @@ const StudentsManagement = () => {
       setIsLoading(false);
     },
   });
-  const { mutate: mutateImportStudentData } = useMutation({
+  const { mutateAsync: mutateImportStudentData } = useMutation({
     mutationFn: (payload: any) => {
       setIsLoading(true);
       return post({
@@ -261,7 +261,7 @@ const StudentsManagement = () => {
       mutateFilterSinhVien({ maSV: searchSinhVien, lophocID: selectedLopCQ });
     },
   });
-  const { mutate: mutateImportGradesData } = useMutation({
+  const { mutateAsync: mutateImportGradesData } = useMutation({
     mutationFn: (payload: any) => {
       setIsLoading(true);
       return post({
@@ -375,11 +375,13 @@ const StudentsManagement = () => {
     setSelectedSinhVien(sinhVien);
   };
 
-  const handleFileStudentUpload = (data: File) => {
-    mutateImportStudentData(data);
+  const handleFileStudentUpload = async (data: File) => {
+    return await mutateImportStudentData(data);
   };
 
-  const hanldeFileGradeUpload = (data: File) => {};
+  const hanldeFileGradeUpload = async (data: File) => {
+    return await mutateImportGradesData(data);
+  };
 
   const handleResetPassword = (maSV: string) => {
     mutateResetPassWord(maSV);
@@ -434,7 +436,7 @@ const StudentsManagement = () => {
       />
       <ImportFileGradeModal
         onUpload={hanldeFileGradeUpload}
-        isShowModal={isOpenStudentImportModal}
+        isShowModal={isOpenGradesImportModal}
         onClose={handleCloseUploadGradeFileModal}
       />
       <StudentFormModal

@@ -38,7 +38,6 @@ export default function MenuContent() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  console.log(pathname.split('/'));
   const handleOnClickNavbar = (link: string) => {
     navigate(link);
   };

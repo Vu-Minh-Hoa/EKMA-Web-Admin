@@ -1,13 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller } from 'react-hook-form';
 import TextField from '@mui/material/TextField';
-export const FormInputText = ({ name, control, label, type }: any) => {
+export const FormInputText = ({
+  name,
+  control,
+  label,
+  type,
+  disabled = false,
+}: any) => {
   return (
     <Controller
       name={name}
       control={control}
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <TextField
+          disabled={disabled}
           type={type}
           helperText={error ? error.message : null}
           size='small'
